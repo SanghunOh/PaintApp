@@ -17,7 +17,7 @@ class MainActivity : AppCompatActivity() {
         var path = Path()
         var paintBrush = Paint()
     }
-
+    //hi poki
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
