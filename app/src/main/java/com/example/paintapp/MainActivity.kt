@@ -7,11 +7,19 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.ImageButton
 import android.widget.Toast
+import androidx.appcompat.widget.Toolbar
+import androidx.drawerlayout.widget.DrawerLayout
 import com.example.paintapp.PaintView.Companion.colorList
 import com.example.paintapp.PaintView.Companion.currentBrush
 import com.example.paintapp.PaintView.Companion.pathList
+import com.google.android.material.navigation.NavigationView
 
 class MainActivity : AppCompatActivity() {
+    private lateinit var toolbar : Toolbar
+
+    private lateinit var drawerLayout : DrawerLayout
+
+    private lateinit var navigationView : NavigationView
     companion object{
         // accessible throughout the application
         var path = Path()
@@ -50,6 +58,39 @@ class MainActivity : AppCompatActivity() {
             colorList.clear()
             path.reset()
         }
+
+        toolbar = findViewById<Toolbar>(R.id.toolbar)
+        setSupportActionBar(toolbar)
+
+        drawerLayout = findViewById<DrawerLayout>(R.id.drawer_layout)
+
+        navigationView = findViewById<NavigationView>(R.id.navigationView)
+
+        navigationView.setNavigationItemSelectedListener { menuItem ->
+            // Handle navigation item click here
+            when (menuItem.itemId) {
+                R.id.nav_camera -> {
+                    // Handle the home action
+                    drawerLayout.closeDrawers()
+                    true
+                }
+                R.id.nav_photo -> {
+                    // Handle the gallery action
+                    drawerLayout.closeDrawers()
+                    true
+                }
+                R.id.nav_slideShow -> {
+                    // Handle the slideshow action
+                    drawerLayout.closeDrawers()
+                    true
+                }
+                else -> false
+            }
+
+            true // Return true to indicate that the item was handled
+        }
+
+
     }
 
     private fun currentColor(color: Int){

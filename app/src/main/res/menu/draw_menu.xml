@@ -1,4 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
-
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_camera"
+            android:title="Camera"
+            android:icon="@drawable/ic_camera"/>
+        <item
+            android:id="@+id/nav_photo"
+            android:title="CPhoto"
+            android:icon="@drawable/ic_photo"/>
+        <item
+            android:id="@+id/nav_slideShow"
+            android:title="slideShow"
+            android:icon="@drawable/ic_slideshow"/>
+    </group>
 </menu>
