@@ -25,7 +25,7 @@ import android.widget.Button
 import android.widget.TextView
 
 class MainActivity : AppCompatActivity() {
-    private lateinit var toolbar : Toolbar
+//    private lateinit var toolbar : Toolbar
 
     private lateinit var drawerLayout : DrawerLayout
 
@@ -111,8 +111,8 @@ class MainActivity : AppCompatActivity() {
             checkInternalStorage()
         }
 
-        toolbar = findViewById<Toolbar>(R.id.toolbar)
-        setSupportActionBar(toolbar)
+//        toolbar = findViewById<Toolbar>(R.id.toolbar)
+//        setSupportActionBar(toolbar)
 
 //      drawerLayout = findViewById<DrawerLayout>(R.id.drawer_layout)
 
