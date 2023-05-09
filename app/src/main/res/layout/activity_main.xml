@@ -58,6 +58,22 @@
                 android:contentDescription="@string/app_eraser_icon"
                 android:background="@drawable/icon_eraser" />
         </LinearLayout>
+
+
+        <com.google.android.material.navigation.NavigationView
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:fitsSystemWindows="true"
+            android:id="@+id/navigationView"
+            android:layout_gravity="left"
+            app:menu="@menu/draw_menu"
+            >
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+            </RelativeLayout>
+        </com.google.android.material.navigation.NavigationView>
     </LinearLayout>
 
     <RelativeLayout
