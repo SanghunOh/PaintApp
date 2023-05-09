@@ -57,8 +57,26 @@
                 android:layout_margin="10dp"
                 android:contentDescription="@string/app_eraser_icon"
                 android:background="@drawable/icon_eraser" />
-        </LinearLayout>
+            <Button
+                android:id="@+id/btnAddPdf"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Add PDF"
+                android:layout_alignParentTop="true"
+                android:layout_alignParentLeft="true"
+                android:layout_marginTop="16dp"
+                android:layout_marginLeft="16dp" />
 
+            <TextView
+                android:id="@+id/tvStorageInfo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Storage Info"
+                android:layout_alignBaseline="@id/btnAddPdf"
+                android:layout_alignParentRight="true"
+                android:layout_marginRight="16dp" />
+
+        </LinearLayout>
 
         <com.google.android.material.navigation.NavigationView
             android:layout_width="wrap_content"
@@ -66,8 +84,7 @@
             android:fitsSystemWindows="true"
             android:id="@+id/navigationView"
             android:layout_gravity="left"
-            app:menu="@menu/draw_menu"
-            >
+            app:menu="@menu/draw_menu">
 
             <RelativeLayout
                 android:layout_width="match_parent"

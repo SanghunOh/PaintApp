@@ -13,10 +13,8 @@ import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.appcompat.widget.Toolbar
 import androidx.drawerlayout.widget.DrawerLayout
-import com.example.paintapp.PaintView.Companion.colorList
 import com.example.paintapp.PaintView.Companion.currentBrush
 import com.example.paintapp.PaintView.Companion.displaySelectBox
-import com.example.paintapp.PaintView.Companion.eraserMode
 import com.example.paintapp.PaintView.Companion.isSelected
 import com.example.paintapp.PaintView.Companion.pathList
 import com.example.paintapp.PaintView.Companion.selectMode
@@ -58,11 +56,6 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        val checkButton = findViewById<Button>(R.id.btnAddPdf)
-        checkButton.setOnClickListener {
-            checkInternalStorage()
-        }
-
         supportActionBar?.hide()
 
         val selectBrush = findViewById<ImageView>(R.id.selectBrush)
@@ -71,6 +64,7 @@ class MainActivity : AppCompatActivity() {
         val blueBtn = findViewById<ImageButton>(R.id.blueColor)
         val blackBtn = findViewById<ImageButton>(R.id.blackColor)
         val clearBtn = findViewById<ImageView>(R.id.clear)
+        val checkButton = findViewById<Button>(R.id.btnAddPdf)
 
         selectBrush.setOnClickListener {
             displaySelectBox = false
@@ -113,6 +107,9 @@ class MainActivity : AppCompatActivity() {
                 path.reset()
             }
         }
+        checkButton.setOnClickListener {
+            checkInternalStorage()
+        }
 
         toolbar = findViewById<Toolbar>(R.id.toolbar)
         setSupportActionBar(toolbar)
@@ -124,11 +121,6 @@ class MainActivity : AppCompatActivity() {
         navigationView.setNavigationItemSelectedListener { menuItem ->
             // Handle navigation item click here
             when (menuItem.itemId) {
-//                R.id.nav_camera -> {
-//                    // Handle the home action
-//                    drawerLayout.closeDrawers()
-//                    true
-//                }
                 R.id.nav_photo -> {
                     // Handle the gallery action
                     drawerLayout.closeDrawers()

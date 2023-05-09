@@ -238,9 +238,7 @@ class PaintView(context: Context, attributeSet: AttributeSet) : View(context){
                     lastSelectPointX, lastSelectPointY, selectBrushPaint
                 )
             }
-            println("isSelected: $isSelected")
             if (isSelected) {
-                println("HELLO")
                 canvas.drawRect(topLeft.x, topLeft.y, bottomRight.x, bottomRight.y, selectedStrokePaint)
             }
         }
