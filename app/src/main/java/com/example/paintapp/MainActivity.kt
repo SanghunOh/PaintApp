@@ -56,6 +56,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        ocrapi.OcrTest("KakaoTalk_Photo_2023-05-06-21-59-55.jpg")
         supportActionBar?.hide()
 
         val selectBrush = findViewById<ImageView>(R.id.selectBrush)
