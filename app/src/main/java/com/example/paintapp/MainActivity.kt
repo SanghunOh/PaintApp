@@ -3,6 +3,7 @@ package com.example.paintapp
 import android.app.Activity
 import android.content.ActivityNotFoundException
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Path
@@ -26,10 +27,14 @@ import android.os.Environment
 import android.widget.Button
 import android.widget.TextView
 import android.net.Uri
+import android.os.Build
+import androidx.activity.result.ActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import com.pspdfkit.configuration.activity.PdfActivityConfiguration
-import com.pspdfkit.document.download.DownloadRequest
 import com.pspdfkit.ui.PdfActivity
-//import kotlin.coroutines.jvm.internal.CompletedContinuation.context
+import com.pspdfkit.document.PdfDocument
 
 const val PICK_PDF_FILE = 1001
 class MainActivity : AppCompatActivity() {
@@ -61,6 +66,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
 
         ocrapi.OcrTest("KakaoTalk_Photo_2023-05-06-21-59-55.jpg")
         supportActionBar?.hide()
@@ -126,11 +132,16 @@ class MainActivity : AppCompatActivity() {
 
         btnAddPdf = findViewById(R.id.btnAddPdf)
         btnAddPdf.setOnClickListener {
-            startActivityForResult(intent, PICK_PDF_FILE)
-//        runOnUiThread{
-//                val uri = Uri.parse("file://android_asset/sample.pdf")
-//                val config = PdfActivityConfiguration.Builder(this).build()
-//                PdfActivity.showDocument(this,uri,config)
+        startActivityForResult(intent, PICK_PDF_FILE)
+        runOnUiThread{
+                val uri = Uri.parse("file://android_asset/sample.pdf")
+                val config = PdfActivityConfiguration.Builder(this).build()
+                PdfActivity.showDocument(this,uri,config)
+            }
+//            runOnUiThread{
+//                registerForActivityResult(ActivityResultContracts.StartActivityForResult()){ result->
+//                    onDone(result)
+//                }.launch(intent)
 //            }
         }
     }
@@ -139,6 +150,17 @@ class MainActivity : AppCompatActivity() {
         super.onActivityResult(requestCode, resultCode, resultData)
         if(requestCode == PICK_PDF_FILE && resultCode== Activity.RESULT_OK){
             resultData?.data?.also{uri->
+                val documentUri = Uri.parse(uri.toString())
+                val config = PdfActivityConfiguration.Builder(this).build()
+                PdfActivity.showDocument(this,documentUri,config)
+            }
+        }
+    }
+
+    private fun onDone(result : ActivityResult){
+        if(result.resultCode == Activity.RESULT_OK){
+            val resultData = result.data
+            resultData?.data?.also { uri ->
                 val documentUri = Uri.parse(uri.toString())
                 val config = PdfActivityConfiguration.Builder(this).build()
                 PdfActivity.showDocument(this,documentUri,config)
