@@ -1,5 +1,8 @@
 package com.example.paintapp
 
+import android.app.Activity
+import android.content.ActivityNotFoundException
+import android.content.Intent
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Path
@@ -22,16 +25,19 @@ import com.google.android.material.navigation.NavigationView
 import android.os.Environment
 import android.widget.Button
 import android.widget.TextView
+import android.net.Uri
+import com.pspdfkit.configuration.activity.PdfActivityConfiguration
+import com.pspdfkit.document.download.DownloadRequest
+import com.pspdfkit.ui.PdfActivity
+//import kotlin.coroutines.jvm.internal.CompletedContinuation.context
 
+const val PICK_PDF_FILE = 1001
 class MainActivity : AppCompatActivity() {
 //    private lateinit var toolbar : Toolbar
 
     private lateinit var drawerLayout : DrawerLayout
-
     private lateinit var navigationView : NavigationView
-
     private lateinit var btnAddPdf: Button
-
     private lateinit var tvStorageInfo: TextView
 
     fun checkInternalStorage() {
@@ -112,42 +118,36 @@ class MainActivity : AppCompatActivity() {
             checkInternalStorage()
         }
 
-//        toolbar = findViewById<Toolbar>(R.id.toolbar)
-//        setSupportActionBar(toolbar)
+        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply{
+            addCategory(Intent.CATEGORY_OPENABLE)
+            type = "application/pdf"
+        }
 
-//      drawerLayout = findViewById<DrawerLayout>(R.id.drawer_layout)
 
-//        navigationView = findViewById<NavigationView>(R.id.navigationView)
-
-//        navigationView.setNavigationItemSelectedListener { menuItem ->
-//            // Handle navigation item click here
-//            when (menuItem.itemId) {
-//                R.id.nav_photo -> {
-//                    // Handle the gallery action
-//                    drawerLayout.closeDrawers()
-//                    true
-//                }
-//                R.id.nav_slideShow -> {
-//                    // Handle the slideshow action
-//                    drawerLayout.closeDrawers()
-//                    true
-//                }
-//                else -> false
+        btnAddPdf = findViewById(R.id.btnAddPdf)
+        btnAddPdf.setOnClickListener {
+            startActivityForResult(intent, PICK_PDF_FILE)
+//        runOnUiThread{
+//                val uri = Uri.parse("file://android_asset/sample.pdf")
+//                val config = PdfActivityConfiguration.Builder(this).build()
+//                PdfActivity.showDocument(this,uri,config)
 //            }
-//
-//            true // Return true to indicate that the item was handled
-//        }
-//        btnAddPdf = findViewById(R.id.btnAddPdf)
-//        tvStorageInfo = findViewById(R.id.tvStorageInfo)
-//
-//        btnAddPdf.setOnClickListener {
-//            val internalStoragePath = Environment.getExternalStorageDirectory().absolutePath
-//            tvStorageInfo.text = "Internal Storage: $internalStoragePath"
-//        }
+        }
     }
 
+    override fun onActivityResult(requestCode:Int, resultCode:Int,resultData:Intent?){
+        super.onActivityResult(requestCode, resultCode, resultData)
+        if(requestCode == PICK_PDF_FILE && resultCode== Activity.RESULT_OK){
+            resultData?.data?.also{uri->
+                val documentUri = Uri.parse(uri.toString())
+                val config = PdfActivityConfiguration.Builder(this).build()
+                PdfActivity.showDocument(this,documentUri,config)
+            }
+        }
+    }
     private fun currentColor(color: Int){
         strokePaint.color = color
         path = Path()
     }
+
 }
