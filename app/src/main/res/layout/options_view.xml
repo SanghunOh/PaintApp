@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:background="@drawable/option_border"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_margin="2dp"
+    android:orientation="horizontal">
+
+    <ImageButton
+        android:id="@+id/request_gpt"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:background="@drawable/ic_gpt"
+        android:layout_margin="2dp"
+        android:contentDescription="@string/app_gpt_request" />
+    <ImageButton
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:background="@drawable/ic_gpt"
+        android:layout_margin="2dp"
+        android:contentDescription="@string/app_gpt_request" />
+</LinearLayout>

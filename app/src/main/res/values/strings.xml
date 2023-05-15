@@ -4,4 +4,5 @@
     <string name="app_eraser_icon">eraser icon</string>
     <string name="app_pen_icon">pen icon</string>
     <string name="app_add_pdf">Add PDF</string>
+    <string name="app_gpt_request">Request GPT</string>
 </resources>
