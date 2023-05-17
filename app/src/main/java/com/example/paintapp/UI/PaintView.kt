@@ -1,28 +1,36 @@
-package com.example.paintapp
+package com.example.paintapp.UI
 
 import android.content.Context
 import android.content.res.Resources
 import android.graphics.*
 import android.util.AttributeSet
 import android.util.DisplayMetrics
+import android.util.Log
+import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
-import com.example.paintapp.MainActivity.Companion.strokePaint
+import android.widget.LinearLayout
+import com.example.paintapp.CustomEventListener
+import com.example.paintapp.CustomPath
 import com.example.paintapp.MainActivity.Companion.path
-import kotlin.math.min
+import com.example.paintapp.MainActivity.Companion.strokePaint
+import com.example.paintapp.R
 import kotlin.math.max
+import kotlin.math.min
 
-class PaintView(context: Context, attributeSet: AttributeSet) : View(context){
-    var params : ViewGroup.LayoutParams? = null //
+class PaintView(context: Context, attributeSet: AttributeSet?) : View(context, attributeSet){
+    var params : ViewGroup.LayoutParams? = null
+
+    var pathList = ArrayList<CustomPath>()
+    var currentBrush = Color.BLACK
+    var selectMode = false
+    var displaySelectBox = false
+    var selectedStroke = ArrayList<Int>()
+    var isSelect = false
+
+    private var customEventListener: CustomEventListener? = null
     companion object{
-        var pathList = ArrayList<CustomPath>()
-        var currentBrush = Color.BLACK
-        var eraserMode = false
-        var selectMode = false
-        var displaySelectBox = false
-        var isSelected = false
-        var selectedStroke = ArrayList<Int>()
     }
 
     init {
@@ -37,6 +45,7 @@ class PaintView(context: Context, attributeSet: AttributeSet) : View(context){
         }
 
         params = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+
     }
 
     private var tmpPath = ArrayList<Path>()
@@ -64,7 +73,7 @@ class PaintView(context: Context, attributeSet: AttributeSet) : View(context){
     }
 
     private val selectedStrokePaint = Paint().apply {
-        val dashPath = DashPathEffect(floatArrayOf(5F, 30F), 0F);
+        val dashPath = DashPathEffect(floatArrayOf(5F, 30F), 0F)
         isAntiAlias = true
         isDither = true
         color = Color.argb(255, 255, 241, 115)
@@ -111,7 +120,7 @@ class PaintView(context: Context, attributeSet: AttributeSet) : View(context){
         when(event.action) {
             MotionEvent.ACTION_DOWN, SPEN_ACTION_DOWN -> {
                 if (selectMode) {
-                    isSelected = false
+                    isSelect = false
                     selectedStroke.clear()
                     displaySelectBox = true
                     firstSelectPointX = x
@@ -188,7 +197,7 @@ class PaintView(context: Context, attributeSet: AttributeSet) : View(context){
                                 firstSelectPointY < pathList[i].points[j].y && pathList[i].points[j].y < lastSelectPointY) {
                                 selectedStroke.add(i)
                                 displaySelectBox = false
-                                isSelected = true
+                                isSelect = true
                                 break
                             }
                         }
@@ -206,15 +215,26 @@ class PaintView(context: Context, attributeSet: AttributeSet) : View(context){
                                 bottomRight.x = max(bottomRight.x, pathList[idx].maxX)
                                 bottomRight.y = max(bottomRight.y, pathList[idx].maxY)
                             }
-                            isSelected = true
+                            isSelect = true
                         }
                         // TODO : create popup for query chatgpt
+
                     }
                 }
                 else {
                     tmpPathPoints.add(PointF(x, y))
-                    pathList.add(CustomPath(currentBrush, path, minX, minY,
-                        maxX, maxY, ArrayList(tmpPathPoints)))
+                    pathList.add(
+                        CustomPath(
+                            currentBrush, path, minX, minY,
+                        maxX, maxY, ArrayList(tmpPathPoints))
+                    )
+
+
+                    triggerCustomEvent(
+                        CustomPath(
+                            currentBrush, path, minX, minY,
+                        maxX, maxY, tmpPathPoints.toList())
+                    )
                     tmpPath.clear()
                     tmpPathPoints.clear()
                 }
@@ -238,7 +258,7 @@ class PaintView(context: Context, attributeSet: AttributeSet) : View(context){
                     lastSelectPointX, lastSelectPointY, selectBrushPaint
                 )
             }
-            if (isSelected) {
+            if (isSelect) {
                 canvas.drawRect(topLeft.x, topLeft.y, bottomRight.x, bottomRight.y, selectedStrokePaint)
             }
         }
@@ -254,6 +274,16 @@ class PaintView(context: Context, attributeSet: AttributeSet) : View(context){
         }
         invalidate()
     }
+
+    fun setCustomEventListener(listener: CustomEventListener) {
+        customEventListener = listener
+    }
+
+    // Custom Event를 발생시키는 함수
+    private fun triggerCustomEvent(path: CustomPath) {
+        customEventListener?.onPathAdded(path)
+    }
+
 
     private fun convertDpToPixel(dp: Float): Float {
         return if (context != null) {
