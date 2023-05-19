@@ -18,8 +18,8 @@
 
         <ImageButton
             android:id="@+id/selectBrush"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
             android:layout_margin="10dp"
             android:background="@drawable/ic_pen"
             android:contentDescription="@string/app_pen_icon" />
@@ -33,32 +33,32 @@
 
             <ImageButton
                 android:id="@+id/blackColor"
-                android:layout_width="50dp"
-                android:layout_height="50dp"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
                 android:layout_margin="10dp"
                 android:background="@drawable/black_background"
                 android:contentDescription="@string/app_pen_color" />
 
             <ImageButton
                 android:id="@+id/redColor"
-                android:layout_width="50dp"
-                android:layout_height="50dp"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
                 android:layout_margin="10dp"
                 android:background="@drawable/red_background"
                 android:contentDescription="@string/app_pen_color" />
 
             <ImageButton
                 android:id="@+id/blueColor"
-                android:layout_width="50dp"
-                android:layout_height="50dp"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
                 android:layout_margin="10dp"
                 android:background="@drawable/blue_background"
                 android:contentDescription="@string/app_pen_color" />
 
             <ImageView
                 android:id="@+id/clear"
-                android:layout_width="50dp"
-                android:layout_height="50dp"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
                 android:layout_margin="10dp"
                 android:background="@drawable/ic_eraser"
                 android:contentDescription="@string/app_eraser_icon" />
@@ -81,7 +81,7 @@
         android:id="@+id/frame_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="70dp"
+        android:layout_marginTop="50dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
