@@ -22,6 +22,7 @@ class ModelAnswer(context: Context, attributeSet: AttributeSet) : LinearLayout(c
     }
 
     private fun closeView() {
+        //이벤트 호출
 
     }
 

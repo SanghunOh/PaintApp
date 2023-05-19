@@ -12,8 +12,13 @@ import android.widget.Button
 import android.widget.TextView
 import android.net.Uri
 import androidx.activity.result.ActivityResult
+import com.pspdfkit.configuration.PdfConfiguration
 import com.pspdfkit.configuration.activity.PdfActivityConfiguration
+import com.pspdfkit.configuration.page.PageLayoutMode
+import com.pspdfkit.configuration.page.PageScrollDirection
+import com.pspdfkit.configuration.page.PageScrollMode
 import com.pspdfkit.ui.PdfActivity
+import com.pspdfkit.ui.PdfFragment
 
 const val PICK_PDF_FILE = 1001
 class MainActivity : AppCompatActivity() {
@@ -114,22 +119,35 @@ class MainActivity : AppCompatActivity() {
         super.onActivityResult(requestCode, resultCode, resultData)
         if(requestCode == PICK_PDF_FILE && resultCode== Activity.RESULT_OK){
             resultData?.data?.also{uri->
+
+                val documentUri = Uri.parse(uri.toString())
+                val config = PdfConfiguration.Builder()
+                    .scrollDirection(PageScrollDirection.VERTICAL)
+                    .scrollMode(PageScrollMode.CONTINUOUS)
+                    .layoutMode(PageLayoutMode.SINGLE)
+                    .build()
+
+
+                val frag = PdfFragment.newInstance(documentUri, config)
+                //val mytext = MyText()
+                //frag.addOnTextSelectionChangeListener(mytext)
+                //frag.addOnAnnotationCreationModeChangeListener(mytext)
+
+
+                val transaction = supportFragmentManager.beginTransaction()
+                transaction.add(R.id.frame_layout, frag)
+                transaction.addToBackStack("detail")
+                transaction.commit()
+                /*
                 val documentUri = Uri.parse(uri.toString())
                 val config = PdfActivityConfiguration.Builder(this).build()
                 PdfActivity.showDocument(this,documentUri,config)
+
+                 */
             }
         }
     }
 
-    private fun onDone(result : ActivityResult){
-        if(result.resultCode == Activity.RESULT_OK){
-            val resultData = result.data
-            resultData?.data?.also { uri ->
-                val documentUri = Uri.parse(uri.toString())
-                val config = PdfActivityConfiguration.Builder(this).build()
-                PdfActivity.showDocument(this,documentUri,config)
-            }
-        }
-    }
+
 
 }
