@@ -132,17 +132,18 @@ class MainActivity : AppCompatActivity() {
 
         btnAddPdf = findViewById(R.id.btnAddPdf)
         btnAddPdf.setOnClickListener {
-        startActivityForResult(intent, PICK_PDF_FILE)
-        runOnUiThread{
-                val uri = Uri.parse("file://android_asset/sample.pdf")
-                val config = PdfActivityConfiguration.Builder(this).build()
-                PdfActivity.showDocument(this,uri,config)
-            }
+            startActivityForResult(intent, PICK_PDF_FILE)
+//        runOnUiThread{
+//                val uri = Uri.parse("file://android_asset/sample.pdf")
+//                val config = PdfActivityConfiguration.Builder(this).build()
+//                PdfActivity.showDocument(this,uri,config)
+//            }
 //            runOnUiThread{
 //                registerForActivityResult(ActivityResultContracts.StartActivityForResult()){ result->
 //                    onDone(result)
 //                }.launch(intent)
 //            }
+//        }
         }
     }
 
@@ -156,17 +157,17 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
-
-    private fun onDone(result : ActivityResult){
-        if(result.resultCode == Activity.RESULT_OK){
-            val resultData = result.data
-            resultData?.data?.also { uri ->
-                val documentUri = Uri.parse(uri.toString())
-                val config = PdfActivityConfiguration.Builder(this).build()
-                PdfActivity.showDocument(this,documentUri,config)
-            }
-        }
-    }
+//
+//    private fun onDone(result : ActivityResult){
+//        if(result.resultCode == Activity.RESULT_OK){
+//            val resultData = result.data
+//            resultData?.data?.also { uri ->
+//                val documentUri = Uri.parse(uri.toString())
+//                val config = PdfActivityConfiguration.Builder(this).layout(R.layout.).build()
+//                PdfActivity.showDocument(this,documentUri,config)
+//            }
+//        }
+//    }
     private fun currentColor(color: Int){
         strokePaint.color = color
         path = Path()
