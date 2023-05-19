@@ -1,8 +1,9 @@
-package com.example.paintapp.Data
+package com.example.paintapp.data
 
 import android.app.Application
-import android.view.Display.Mode
-import androidx.lifecycle.LiveData
+import android.graphics.PointF
+import com.example.paintapp.API.RetrofitInstance
+import com.example.paintapp.API.response.Message
 import com.example.paintapp.CustomPath
 
 class PaintCanvasRepository(application: Application) {
@@ -52,7 +53,7 @@ class PaintCanvasRepository(application: Application) {
         } catch (e: Exception) { }
     }
 
-    fun addModelAnswer(modelAnswer: ModelAnswer) {
+    private fun addModelAnswer(modelAnswer: ModelAnswer) {
         try {
             val thread = Thread {
                 modelAnswerDao.insert(modelAnswer)
@@ -72,5 +73,19 @@ class PaintCanvasRepository(application: Application) {
             thread.start()
         } catch (e: Exception) { }
         return ret
+    }
+
+    fun queryGPT(canvasId: Long, question: String, position: PointF) : String {
+        val l : List<Message> = listOf(Message("user", question))
+
+        val gptAnswer =  RetrofitInstance.api
+            .query("text-davinci-003", listOf(Message("user", question)))
+            .choices[0]
+            .message
+            .content
+
+        addModelAnswer(ModelAnswer(0, canvasId, question, gptAnswer, position.x, position.y))
+
+        return gptAnswer
     }
 }

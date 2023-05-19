@@ -2,7 +2,6 @@ package com.example.paintapp
 
 import android.content.Context
 import android.graphics.Color
-import android.graphics.Paint
 import android.graphics.Path
 import androidx.lifecycle.ViewModelProvider
 import android.os.Bundle
@@ -15,10 +14,8 @@ import android.widget.FrameLayout
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.LinearLayout
-import android.widget.TextView
-import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.lifecycle.Observer
-import com.example.paintapp.Data.PaintCanvas
+import com.example.paintapp.data.PaintCanvas
 import com.example.paintapp.UI.PaintView
 
 
@@ -100,6 +97,17 @@ class PaintFragment : Fragment(), CustomEventListener {
             }
         }
 
+        Log.d("paintf","no paint_view_include")
+        val paintViewInclude = view.findViewById<FrameLayout>(R.id.paint_view_include)
+        if (paintViewInclude != null) {
+            println(paintViewInclude)
+            Log.d("paintf","no paint_view_include")
+        }
+        Log.d("paintf", "no paint_view")
+        paintView = paintViewInclude.findViewById(R.id.paint_view)
+        if (paintViewInclude.findViewById<View>(R.id.paint_view) == null) {
+            Log.d("paintf", "no paint_view")
+        }
         paintView = view.findViewById(R.id.paint_view)
         paintView.setCustomEventListener(this)
     }

@@ -1,7 +1,6 @@
-package com.example.paintapp.Data
+package com.example.paintapp.data
 
 import androidx.room.*
-import androidx.room.util.TableInfo
 import com.example.paintapp.CustomPath
 
 

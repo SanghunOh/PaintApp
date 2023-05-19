@@ -4,6 +4,9 @@ plugins {
 }
 apply plugin: 'kotlin-kapt'
 
+Properties properties = new Properties()
+properties.load(project.rootProject.file('local.properties').newDataInputStream())
+
 android {
     namespace 'com.example.paintapp'
     compileSdk 33
@@ -16,6 +19,8 @@ android {
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+        buildConfigField "String","API_KEY",properties['api_key']
     }
 
     buildTypes {
@@ -53,4 +58,7 @@ dependencies {
     kapt "androidx.room:room-compiler:2.5.1"
     implementation "androidx.room:room-ktx:2.5.1"
     implementation "com.google.code.gson:gson:2.9.0"
+
+    implementation 'com.squareup.retrofit2:converter-gson:2.6.2'
+    implementation 'com.squareup.retrofit2:retrofit:2.6.0'
 }

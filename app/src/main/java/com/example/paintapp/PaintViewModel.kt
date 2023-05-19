@@ -4,9 +4,8 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import com.example.paintapp.Data.PaintCanvas
-import com.example.paintapp.Data.PaintCanvasRepository
+import com.example.paintapp.data.PaintCanvas
+import com.example.paintapp.data.PaintCanvasRepository
 
 class PaintViewModel(application: Application) : AndroidViewModel(application) {
     private val paintCanvasRepository = PaintCanvasRepository(application)

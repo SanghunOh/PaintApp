@@ -1,8 +1,7 @@
-package com.example.paintapp.Data
+package com.example.paintapp.data
 
 import androidx.lifecycle.LiveData
 import androidx.room.*
-import com.example.paintapp.CustomPath
 
 @Dao
 interface PaintCanvasDao {
@@ -12,7 +11,7 @@ interface PaintCanvasDao {
     @Query("SELECT * from paint_canvas WHERE file_name = :fileName")
     fun getCanvas(fileName: String) : PaintCanvas
 
-    @Insert()
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     fun insert(p : PaintCanvas) : Long
 
     @Delete()
