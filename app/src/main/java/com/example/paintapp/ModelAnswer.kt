@@ -15,6 +15,9 @@ class ModelAnswer(context: Context, attributeSet: AttributeSet) : LinearLayout(c
     private var closeBtn = findViewById<ImageView>(R.id.close)
     private var minimizeBtn = findViewById<ImageView>(R.id.minimize)
     private var isMinimized: Boolean = false
+
+
+
     init {
         params = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
         closeBtn.setOnClickListener{ closeView() }

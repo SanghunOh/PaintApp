@@ -79,7 +79,7 @@ class PaintCanvasRepository(application: Application) {
         val l : List<Message> = listOf(Message("user", question))
 
         val gptAnswer =  RetrofitInstance.api
-            .query("text-davinci-003", listOf(Message("user", question)))
+            .query("gpt-3.5-turbo", listOf(Message("user", question)))
             .choices[0]
             .message
             .content
@@ -88,4 +88,5 @@ class PaintCanvasRepository(application: Application) {
 
         return gptAnswer
     }
+
 }

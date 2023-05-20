@@ -35,7 +35,7 @@ object RetrofitInstance {
 interface ModelService {
 
     @Headers("Content-Type: application/json", "Authorization: ${BuildConfig.API_KEY}")
-    @POST("/v1/completions")
+    @POST("/v1/chat/completions")
     fun query(
         @Body model: String,
         @Body messages: List<Message>
