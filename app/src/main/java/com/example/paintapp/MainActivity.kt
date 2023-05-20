@@ -182,7 +182,7 @@ class MainActivity : AppCompatActivity() {
                                 .url("https://api.openai.com/v1/chat/completions")
                                 .addHeader(
                                     "Authorization",
-                                    "Bearer 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"
+                                    BuildConfig.API_KEY
                                 )
                                 .post(requestBody)
                                 .build()
