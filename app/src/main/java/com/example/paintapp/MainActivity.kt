@@ -1,9 +1,11 @@
 package com.example.paintapp
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.graphics.Paint
 import android.graphics.Path
+import android.graphics.RectF
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import androidx.drawerlayout.widget.DrawerLayout
@@ -13,6 +15,7 @@ import android.widget.TextView
 import android.net.Uri
 import android.util.Log
 import android.widget.Toast
+import android.widget.Toolbar
 import androidx.activity.result.ActivityResult
 import com.example.paintapp.API.RetrofitInstance
 import com.example.paintapp.API.response.Message
@@ -21,26 +24,40 @@ import com.pspdfkit.configuration.activity.PdfActivityConfiguration
 import com.pspdfkit.configuration.page.PageLayoutMode
 import com.pspdfkit.configuration.page.PageScrollDirection
 import com.pspdfkit.configuration.page.PageScrollMode
+import com.pspdfkit.document.PdfDocument
 import com.pspdfkit.ui.PdfActivity
 import com.pspdfkit.ui.PdfFragment
+import com.pspdfkit.ui.drawable.PdfDrawable
+import com.pspdfkit.ui.drawable.PdfDrawableProvider
+import com.pspdfkit.ui.special_mode.controller.AnnotationCreationController
+import com.pspdfkit.ui.special_mode.controller.AnnotationTool
+import com.pspdfkit.ui.special_mode.manager.AnnotationManager.OnAnnotationCreationModeChangeListener
+import com.pspdfkit.ui.toolbar.*
 import okhttp3.*
 import org.json.JSONObject
 import java.io.IOException
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.toRequestBody
+import java.util.*
 
 
 const val PICK_PDF_FILE = 1001
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), OnAnnotationCreationModeChangeListener{
 //    private lateinit var toolbar : Toolbar
 
     private lateinit var drawerLayout : DrawerLayout
     private lateinit var navigationView : NavigationView
     private lateinit var btnAddPdf: Button
     private lateinit var answerBtn: Button
+    private lateinit var changeMode: Button
     private lateinit var tvStorageInfo: TextView
 
     private lateinit var paintFragment: PaintFragment
+
+    private lateinit var annotationCreationToolbar: AnnotationCreationToolbar
+    private lateinit var toolbarCoordinatorLayout : ToolbarCoordinatorLayout
+    // private lateinit var toolbarCoordinatorLayout: ToolbarCoordinatorLayout
+    private lateinit var fragment: PdfFragment
 
     companion object{
         // accessible throughout the application
@@ -54,65 +71,12 @@ class MainActivity : AppCompatActivity() {
 
         ocrapi.OcrTest("KakaoTalk_Photo_2023-05-06-21-59-55.jpg")
         supportActionBar?.hide()
-
-
-
-//        val selectBrush = findViewById<ImageView>(R.id.selectBrush)
-//        val brushBtnGroup = findViewById<LinearLayout>(R.id.brushGroup)
-//        val redBtn = findViewById<ImageButton>(R.id.redColor)
-//        val blueBtn = findViewById<ImageButton>(R.id.blueColor)
-//        val blackBtn = findViewById<ImageButton>(R.id.blackColor)
-//        val clearBtn = findViewById<ImageView>(R.id.clear)
         val checkButton = findViewById<Button>(R.id.btnAddPdf)
 
         supportFragmentManager.beginTransaction()
             .add(R.id.frame_layout, PaintFragment())
             .addToBackStack(null)
             .commit()
-
-
-//        selectBrush.setOnClickListener {
-//            displaySelectBox = false
-//            isSelected = false
-//            selectedStroke.clear()
-//            if (selectMode) {
-//                selectMode = false
-//                brushBtnGroup.visibility = VISIBLE
-//            }
-//            else {
-//                selectMode = true
-//                brushBtnGroup.visibility = GONE
-//            }
-//        }
-//        redBtn.setOnClickListener {
-//            if (!selectMode) {
-//                Toast.makeText(this, "Clicked", Toast.LENGTH_SHORT).show()
-//                currentBrush = Color.RED
-//                currentColor(currentBrush)
-//            }
-//        }
-//        blueBtn.setOnClickListener {
-//            if (!selectMode) {
-//                Toast.makeText(this, "Clicked", Toast.LENGTH_SHORT).show()
-//                currentBrush = Color.BLUE
-//                currentColor(currentBrush)
-//            }
-//        }
-//        blackBtn.setOnClickListener {
-//            if (!selectMode) {
-//                Toast.makeText(this, "Clicked", Toast.LENGTH_SHORT).show()
-//                currentBrush = Color.BLACK
-//                currentColor(currentBrush)
-//            }
-//        }
-//        clearBtn.setOnClickListener {
-//            if (!selectMode) {
-//                Toast.makeText(this, "Clicked", Toast.LENGTH_SHORT).show()
-//                pathList.clear()
-//                path.reset()
-//            }
-//        }
-
         val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply{
             addCategory(Intent.CATEGORY_OPENABLE)
             type = "application/pdf"
@@ -121,21 +85,21 @@ class MainActivity : AppCompatActivity() {
         btnAddPdf.setOnClickListener {
             startActivityForResult(intent, PICK_PDF_FILE)
         }
-        /*
-        answerBtn = findViewById(R.id.answerBtn)
-        answerBtn.setOnClickListener {
-            val Popup = ModelPopupActivity(this)
-            Popup.show("Diaglog Success!!")
-        }
-
-         */
-
     }
-
-
 
     override fun onActivityResult(requestCode:Int, resultCode:Int,resultData:Intent?){
         super.onActivityResult(requestCode, resultCode, resultData)
+        val annotationTools = mutableListOf(*AnnotationTool.values())
+        toolbarCoordinatorLayout = findViewById(R.id.toolbarCoordinatorLayout) as ToolbarCoordinatorLayout
+
+        annotationTools.remove(AnnotationTool.MAGIC_INK)
+
+        val enabledAnnotationTools = AnnotationTool.values().toMutableList()
+        enabledAnnotationTools.remove(AnnotationTool.IMAGE)
+
+        val tool = AnnotationTool.SIGNATURE
+
+
         if(requestCode == PICK_PDF_FILE && resultCode== Activity.RESULT_OK){
             resultData?.data?.also{uri->
 
@@ -144,18 +108,27 @@ class MainActivity : AppCompatActivity() {
                     .scrollDirection(PageScrollDirection.VERTICAL)
                     .scrollMode(PageScrollMode.CONTINUOUS)
                     .layoutMode(PageLayoutMode.SINGLE)
+                    .enabledAnnotationTools(enabledAnnotationTools)
                     .build()
 
                 val frag = PdfFragment.newInstance(documentUri, config)
-                //val mytext = MyText()
-                //frag.addOnTextSelectionChangeListener(mytext)
-                //frag.addOnAnnotationCreationModeChangeListener(mytext)
-
 
                 val transaction = supportFragmentManager.beginTransaction()
                 transaction.add(R.id.frame_layout, frag)
                 transaction.addToBackStack("detail")
                 transaction.commit()
+
+
+                changeMode = findViewById(R.id.changeEditmodeBtn)
+                changeMode.setOnClickListener{
+                    //Toast.makeText(this,"Toolbar 표시해라",Toast.LENGTH_LONG).show()
+                    //frag.enterAnnotationCreationMode(tool)
+//                    toolbarCoordinatorLayout = findViewById(R.id.toolbarCoordinatorLayout)
+                    annotationCreationToolbar = AnnotationCreationToolbar(this)
+                    frag.addOnAnnotationCreationModeChangeListener(this)
+                    frag.enterAnnotationCreationMode()
+                }
+
 
                 answerBtn = findViewById(R.id.answerBtn)
                 answerBtn.setOnClickListener {
@@ -187,7 +160,7 @@ class MainActivity : AppCompatActivity() {
                                 .post(requestBody)
                                 .build()
 
-                            okHttpClient.newCall(request).enqueue(object : Callback {
+                        okHttpClient.newCall(request).enqueue(object : Callback {
                             override fun onResponse(call: Call, response: Response) {
                                 //Log.i("MyErrorMSG", "onResponse: ${response.body.toString()}")
                                 val json_obj = JSONObject(response.body?.string())
@@ -209,5 +182,22 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
+    }
+
+    override fun onEnterAnnotationCreationMode(controller: AnnotationCreationController) {
+        // Bind the toolbar to the controller.
+
+        Toast.makeText(this,"Toolbar 표시해라",Toast.LENGTH_LONG).show()
+        annotationCreationToolbar.bindController(controller)
+
+        // Now display the toolbar in the `toolbarCoordinatorLayout`.
+        toolbarCoordinatorLayout.displayContextualToolbar(annotationCreationToolbar, true)
+    }
+
+    override fun onChangeAnnotationCreationMode(p0: AnnotationCreationController) {
+    }
+
+    override fun onExitAnnotationCreationMode(p0: AnnotationCreationController) {
+        annotationCreationToolbar.unbindController()
     }
 }
