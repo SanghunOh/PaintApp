@@ -5,20 +5,21 @@ import android.graphics.Paint
 import android.util.AttributeSet
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageButton
-import android.widget.ImageView
-import android.widget.LinearLayout
-import android.widget.ScrollView
+import android.widget.*
 
-class ModelAnswer(context: Context, attributeSet: AttributeSet) : LinearLayout(context, attributeSet) {
+class ModelAnswer(context: Context) : LinearLayout(context) {
     var params : ViewGroup.LayoutParams? = null
-    private var closeBtn = findViewById<ImageView>(R.id.close)
-    private var minimizeBtn = findViewById<ImageView>(R.id.minimize)
-    private var isMinimized: Boolean = false
+    private lateinit var closeBtn: ImageView
+    private lateinit var minimizeBtn: ImageView
+    private lateinit var questionTextView: TextView
+    private lateinit var answerTextView: TextView
+    var isMinimized: Boolean = false
     init {
-        params = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
-        closeBtn.setOnClickListener{ closeView() }
-        minimizeBtn.setOnClickListener{ minimizeView() }
+        inflate(context, R.layout.model_answer_view, this)
+    }
+
+    fun inflate() {
+
     }
 
     private fun closeView() {
@@ -26,7 +27,7 @@ class ModelAnswer(context: Context, attributeSet: AttributeSet) : LinearLayout(c
     }
 
     private fun minimizeView() {
-        var scrollView = findViewById<ScrollView>(R.id.answer_field)
+        val scrollView = findViewById<ScrollView>(R.id.answer_field)
         if (isMinimized) {
             scrollView.visibility = VISIBLE
         }

@@ -3,26 +3,34 @@ package com.example.paintapp
 import android.content.Context
 import android.graphics.Color
 import android.graphics.Path
-import androidx.lifecycle.ViewModelProvider
+import android.graphics.PointF
 import android.os.Bundle
 import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.View
+import android.view.View.GONE
+import android.view.View.VISIBLE
 import android.view.ViewGroup
-import android.widget.FrameLayout
-import android.widget.ImageButton
-import android.widget.ImageView
-import android.widget.LinearLayout
+import android.widget.*
+import androidx.core.view.marginLeft
+import androidx.core.view.marginTop
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
-import com.example.paintapp.data.PaintCanvas
+import androidx.lifecycle.ViewModelProvider
 import com.example.paintapp.UI.PaintView
+import com.example.paintapp.data.PaintCanvas
+import kotlinx.coroutines.delay
 
 
 class PaintFragment : Fragment(), CustomEventListener {
-    private lateinit var mainActivity : MainActivity
+    private lateinit var mainActivity: MainActivity
     private lateinit var paintView: PaintView
     private lateinit var viewModel: PaintViewModel
+    private lateinit var paintViewContainer: FrameLayout
+    private lateinit var paintFragmentView: View
+    private var isStrokeSelected = false
+    private var strokePosition: PointF = PointF(0F, 0F)
 
     companion object {
         fun newInstance() = PaintFragment()
@@ -44,12 +52,14 @@ class PaintFragment : Fragment(), CustomEventListener {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        paintFragmentView = view
+
         viewModel = ViewModelProvider(this)[PaintViewModel::class.java]
         viewModel.pathList.observe(viewLifecycleOwner, Observer<ArrayList<CustomPath>> {paths ->
             paintView.pathList = paths
         })
 
-        viewModel.addFile(PaintCanvas(1, "Blank"))
+        viewModel.addFile(PaintCanvas("Blank"))
 
         val selectBrush = mainActivity.findViewById<ImageView>(R.id.selectBrush)
         val brushBtnGroup = mainActivity.findViewById<LinearLayout>(R.id.brushGroup)
@@ -57,6 +67,8 @@ class PaintFragment : Fragment(), CustomEventListener {
         val blueBtn = mainActivity.findViewById<ImageButton>(R.id.blueColor)
         val blackBtn = mainActivity.findViewById<ImageButton>(R.id.blackColor)
         val clearBtn = mainActivity.findViewById<ImageView>(R.id.clear)
+        val gptRequest = mainActivity.findViewById<ImageButton>(R.id.answerBtn)
+        paintViewContainer = mainActivity.findViewById(R.id.paint_view_container)
 
         selectBrush.setOnClickListener {
             paintView.displaySelectBox = false
@@ -97,19 +109,72 @@ class PaintFragment : Fragment(), CustomEventListener {
             }
         }
 
-        Log.d("paintf","no paint_view_include")
         val paintViewInclude = view.findViewById<FrameLayout>(R.id.paint_view_include)
-        if (paintViewInclude != null) {
-            println(paintViewInclude)
-            Log.d("paintf","no paint_view_include")
-        }
-        Log.d("paintf", "no paint_view")
         paintView = paintViewInclude.findViewById(R.id.paint_view)
-        if (paintViewInclude.findViewById<View>(R.id.paint_view) == null) {
-            Log.d("paintf", "no paint_view")
-        }
         paintView = view.findViewById(R.id.paint_view)
         paintView.setCustomEventListener(this)
+
+        gptRequest.setOnClickListener {
+            onGptRequest(paintView)
+        }
+
+        val observer = Observer<String> { m ->
+//                val modelAnswer: LinearLayout = layoutInflater.inflate(R.layout.model_answer_view, paintViewContainer,false) as LinearLayout
+            val modelAnswer = ModelAnswer(mainActivity)
+            modelAnswer.visibility = LinearLayout.VISIBLE
+
+            val layoutParams = LinearLayout.LayoutParams(800, 500)
+            layoutParams.leftMargin = strokePosition.x.toInt()
+            layoutParams.topMargin = strokePosition.y.toInt()
+
+            modelAnswer.layoutParams = layoutParams
+
+            val closeBtn = modelAnswer.findViewById<ImageView>(R.id.close)
+            val minimizeBtn = modelAnswer.findViewById<ImageView>(R.id.minimize)
+            val questionBarTextView = modelAnswer.findViewById<TextView>(R.id.question_bar)
+            val questionTextView = modelAnswer.findViewById<TextView>(R.id.question)
+            val answerTextView = modelAnswer.findViewById<TextView>(R.id.answer)
+            val modelAnswerTopBar = modelAnswer.findViewById<LinearLayout>(R.id.model_answer_top_bar)
+            val scrollView = modelAnswer.findViewById<ScrollView>(R.id.answer_field)
+
+            questionTextView.text = context?.getString(R.string.app_gpt_question, "What is YOLO") ?: ""
+            questionBarTextView.text = context?.getString(R.string.app_gpt_question, "What is YOLO") ?: ""
+            answerTextView.text = context?.getString(R.string.app_gpt_answer, m)
+
+            closeBtn.setOnClickListener {
+                paintViewContainer.removeView(modelAnswer)
+            }
+
+            minimizeBtn.setOnClickListener {
+                if (scrollView.visibility == VISIBLE)
+                    scrollView.visibility = GONE
+                else if(scrollView.visibility == GONE)
+                    scrollView.visibility = VISIBLE
+            }
+
+            var moveX = strokePosition.x
+            var moveY = strokePosition.y
+            modelAnswerTopBar.setOnTouchListener { v, event->
+                when(event.action) {
+                    MotionEvent.ACTION_DOWN -> {
+                        moveX = modelAnswer.x - event.rawX
+                        moveY = modelAnswer.y - event.rawY
+                    }
+                    MotionEvent.ACTION_MOVE -> {
+                        modelAnswer.animate()
+                            .x(event.rawX + moveX)
+                            .y(event.rawY + moveY)
+                            .setDuration(0)
+                            .start()
+                    }
+                }
+                return@setOnTouchListener true
+            }
+            Log.d("gpt", "WHY??")
+            paintViewContainer.addView(modelAnswer)
+            modelAnswer.bringToFront()
+        }
+        viewModel.modelAnswer.observe(viewLifecycleOwner, observer)
     }
 
     private fun currentColor(color: Int){
@@ -124,5 +189,21 @@ class PaintFragment : Fragment(), CustomEventListener {
 
     override fun onPathAdded(path: CustomPath) {
         viewModel.addPath(path)
+    }
+
+    override fun onStrokeSelected(pos: PointF) {
+        println("${pos.x}, ${pos.y}")
+        isStrokeSelected = true
+        strokePosition.x = pos.x
+        strokePosition.y = pos.y
+    }
+
+    private fun onGptRequest(paintView: PaintView) {
+        if (isStrokeSelected) {
+            isStrokeSelected = false
+            paintView.isSelect = false
+
+            viewModel.queryGPT(0, "What is YOLO?", PointF(0F, 0F))
+        }
     }
 }

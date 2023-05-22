@@ -11,16 +11,21 @@ import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.LinearLayout
 
-class OptionsView(context: Context, attributeSet: AttributeSet) : View(context) {
+class OptionsView(context: Context) : View(context) {
     var params : ViewGroup.LayoutParams? = null
     private var gptBtn = findViewById<ImageButton>(R.id.request_gpt)
 
     init {
-        params = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
-        gptBtn.setOnClickListener{ gptRequest() }
+
     }
 
-    fun gptRequest() {
+    override fun onFinishInflate() {
+        super.onFinishInflate()
+
+        gptBtn?.setOnClickListener{ gptRequest() }
+    }
+
+    private fun gptRequest() {
         // change to image file
         // http request
     }

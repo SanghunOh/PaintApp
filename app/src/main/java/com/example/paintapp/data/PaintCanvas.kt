@@ -6,13 +6,13 @@ import com.example.paintapp.CustomPath
 
 @Entity(tableName="paint_canvas")
 data class PaintCanvas(
-    @PrimaryKey(autoGenerate = true)
-    @ColumnInfo(name = "canvas_id")
-    val canvasId : Long,
-
     @ColumnInfo(name = "file_name")
     var fileName : String = "",
-) { }
+) {
+    @PrimaryKey(autoGenerate = true)
+    @ColumnInfo(name = "canvas_id")
+    var canvasId: Long = 0
+}
 
 @Entity(tableName = "canvas_path",
     foreignKeys = [
@@ -23,15 +23,16 @@ data class PaintCanvas(
         )
     ])
 data class CanvasPath(
-    @PrimaryKey(autoGenerate = true)
-    val pathId : Long,
-
     @ColumnInfo(name = "canvas_id")
     val canvasId: Long,
 
     @Embedded
     var canvasPath : CustomPath? = null,
-) { }
+) {
+    @PrimaryKey(autoGenerate = true)
+    @ColumnInfo(name = "path_id")
+    var pathId: Long = 0
+}
 
 @Entity(tableName = "model_answer",
     foreignKeys = [
@@ -42,9 +43,6 @@ data class CanvasPath(
         )
     ])
 data class ModelAnswer(
-    @PrimaryKey(autoGenerate = true)
-    val answerId : Long,
-
     @ColumnInfo(name = "canvas_id")
     val canvasId: Long,
 
@@ -52,4 +50,8 @@ data class ModelAnswer(
     var answer: String,
     var x: Float,
     var y: Float
-) { }
+) {
+    @PrimaryKey(autoGenerate = true)
+    @ColumnInfo(name = "answer_id")
+    var answerId: Long = 0
+}

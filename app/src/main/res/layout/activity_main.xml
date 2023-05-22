@@ -55,26 +55,26 @@
                 android:background="@drawable/blue_background"
                 android:contentDescription="@string/app_pen_color" />
 
-            <ImageView
+            <ImageButton
                 android:id="@+id/clear"
                 android:layout_width="30dp"
                 android:layout_height="30dp"
                 android:layout_margin="10dp"
                 android:background="@drawable/ic_eraser"
                 android:contentDescription="@string/app_eraser_icon" />
-
-            <Button
-                android:id="@+id/btnAddPdf"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/app_add_pdf" />
-
-            <Button
-                android:id="@+id/answerBtn"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="answerBtn" />
         </LinearLayout>
+        <Button
+            android:id="@+id/btnAddPdf"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/app_add_pdf" />
+
+        <ImageButton
+            android:id="@+id/answerBtn"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_margin="10dp"
+            android:background="@drawable/ic_gpt"/>
     </LinearLayout>
 
     <FrameLayout

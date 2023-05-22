@@ -19,8 +19,7 @@ abstract class PaintDatabase : RoomDatabase() {
         private var INSTANCE: PaintDatabase? = null
 
         fun getDatabase(
-            context: Context,
-//            scope: CoroutineScope
+            context: Context
         ): PaintDatabase {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(

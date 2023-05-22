@@ -5,4 +5,6 @@
     <string name="app_pen_icon">pen icon</string>
     <string name="app_add_pdf">Add PDF</string>
     <string name="app_gpt_request">Request GPT</string>
+    <string name="app_gpt_question">Q. %1$s</string>
+    <string name="app_gpt_answer">A. %1$s</string>
 </resources>

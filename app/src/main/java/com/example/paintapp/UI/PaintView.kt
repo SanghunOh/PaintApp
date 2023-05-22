@@ -3,21 +3,23 @@ package com.example.paintapp.UI
 import android.content.Context
 import android.content.res.Resources
 import android.graphics.*
+import android.os.Environment
 import android.util.AttributeSet
 import android.util.DisplayMetrics
 import android.util.Log
-import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
-import android.widget.LinearLayout
 import com.example.paintapp.CustomEventListener
 import com.example.paintapp.CustomPath
 import com.example.paintapp.MainActivity.Companion.path
 import com.example.paintapp.MainActivity.Companion.strokePaint
 import com.example.paintapp.R
+import java.io.File
+import java.io.FileOutputStream
 import kotlin.math.max
 import kotlin.math.min
+
 
 class PaintView(context: Context, attributeSet: AttributeSet?) : View(context, attributeSet){
     var params : ViewGroup.LayoutParams? = null
@@ -30,8 +32,6 @@ class PaintView(context: Context, attributeSet: AttributeSet?) : View(context, a
     var isSelect = false
 
     private var customEventListener: CustomEventListener? = null
-    companion object{
-    }
 
     init {
         strokePaint.apply {
@@ -218,7 +218,7 @@ class PaintView(context: Context, attributeSet: AttributeSet?) : View(context, a
                             isSelect = true
                         }
                         // TODO : create popup for query chatgpt
-
+                        triggerOnStrokeSelected(PointF(topLeft.x, bottomRight.y))
                     }
                 }
                 else {
@@ -230,7 +230,7 @@ class PaintView(context: Context, attributeSet: AttributeSet?) : View(context, a
                     )
 
 
-                    triggerCustomEvent(
+                    triggerOnPathAdded(
                         CustomPath(
                             currentBrush, path, minX, minY,
                         maxX, maxY, tmpPathPoints.toList())
@@ -280,8 +280,41 @@ class PaintView(context: Context, attributeSet: AttributeSet?) : View(context, a
     }
 
     // Custom Event를 발생시키는 함수
-    private fun triggerCustomEvent(path: CustomPath) {
+    private fun triggerOnPathAdded(path: CustomPath) {
         customEventListener?.onPathAdded(path)
+    }
+
+    private fun triggerOnStrokeSelected(pos: PointF) {
+        customEventListener?.onStrokeSelected(pos);
+    }
+
+    fun canvasToImage(): Canvas {
+        val bitmap = Bitmap.createBitmap(800, 800, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bitmap)
+        val paint = Paint()
+        canvas.drawColor(Color.WHITE)
+
+        paint.color = Color.BLACK
+
+        for(i: Int in 0 until selectedStroke.size) {
+            canvas.drawPath(pathList[selectedStroke[i]].path, paint)
+        }
+
+        var fos: FileOutputStream? = null
+        val pictureFileDir = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), context.getString(
+            R.string.app_name))
+        val pictureFile = File(pictureFileDir.path + System.currentTimeMillis() + ".png")
+        try {
+            fos = FileOutputStream(pictureFile)
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos)
+            fos.flush()
+            fos.close()
+        } catch (e: Exception) {
+            Log.e("testSaveView", "Exception: $e")
+        }
+
+
+        return canvas
     }
 
 

@@ -11,7 +11,7 @@ interface PaintCanvasDao {
     @Query("SELECT * from paint_canvas WHERE file_name = :fileName")
     fun getCanvas(fileName: String) : PaintCanvas
 
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    @Insert()
     fun insert(p : PaintCanvas) : Long
 
     @Delete()

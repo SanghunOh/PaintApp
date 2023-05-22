@@ -2,15 +2,25 @@ package com.example.paintapp.data
 
 import android.app.Application
 import android.graphics.PointF
-import com.example.paintapp.API.RetrofitInstance
-import com.example.paintapp.API.response.Message
+import android.util.Log
+import androidx.lifecycle.MutableLiveData
+import com.example.paintapp.BuildConfig
 import com.example.paintapp.CustomPath
+import okhttp3.*
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.RequestBody.Companion.toRequestBody
+import org.json.JSONObject
+import java.io.IOException
+
 
 class PaintCanvasRepository(application: Application) {
+    private val app = application
     private val paintDatabase = PaintDatabase.getDatabase(application)
     private val paintCanvasDao: PaintCanvasDao = paintDatabase.PaintCanvasDao()
     private val canvasPathDao: CanvasPathDao = paintDatabase.CanvasPathDao()
     private val modelAnswerDao: ModelAnswerDao = paintDatabase.ModelAnswerDao()
+
+    private val answerLiveData: MutableLiveData<String> = MutableLiveData<String>()
 
     fun addFile(paintCanvas : PaintCanvas) : Long {
         var id : Long = 0
@@ -47,7 +57,7 @@ class PaintCanvasRepository(application: Application) {
     fun addCustomPath(canvasId: Long, customPath: CustomPath) {
         try {
             val thread = Thread {
-                canvasPathDao.insertPath(CanvasPath(0, canvasId, customPath))
+                canvasPathDao.insertPath(CanvasPath(canvasId, customPath))
             }
             thread.start()
         } catch (e: Exception) { }
@@ -75,17 +85,47 @@ class PaintCanvasRepository(application: Application) {
         return ret
     }
 
-    fun queryGPT(canvasId: Long, question: String, position: PointF) : String {
-        val l : List<Message> = listOf(Message("user", question))
+    fun queryGPT(canvasId: Long, question: String, position: PointF, modelAnswer: MutableLiveData<String>) {
+        var gptAnswer: String = ""
 
-        val gptAnswer =  RetrofitInstance.api
-            .query("text-davinci-003", listOf(Message("user", question)))
-            .choices[0]
-            .message
-            .content
+        val mediaType: MediaType = "application/json; charset=utf-8".toMediaType()
+        val okHttpClient = OkHttpClient()
+        var json = "{" +
+                "  \"model\": \"gpt-3.5-turbo\"," +
+                "  \"messages\": [{\"role\": \"user\"," +
+                "  \"content\": \"Hello!!\"}]" +
+                "}"
 
-        addModelAnswer(ModelAnswer(0, canvasId, question, gptAnswer, position.x, position.y))
+        json = json.replace("Hello!!", question)
+        val requestBody: RequestBody = json.toRequestBody(mediaType)
+        val request: Request =
+            Request.Builder()
+                .url("https://api.openai.com/v1/chat/completions")
+                .addHeader(
+                    "Authorization",
+                    BuildConfig.API_KEY
+                )
+                .post(requestBody)
+                .build()
 
-        return gptAnswer
+        okHttpClient.newCall(request).enqueue(object : Callback {
+            override fun onResponse(call: Call, response: Response) {
+                val json_obj = JSONObject(response.body?.string())
+                Log.d("gpt", json_obj.toString())
+                val json_array = json_obj.optJSONArray("choices")
+
+                Log.d("gpt", json_array.toString())
+                val json_text = json_array!!.getJSONObject(0).getString("message")
+                val json_obj2 = JSONObject(json_text)
+                val json_text2 = json_obj2.getString("content")
+
+                modelAnswer.postValue(json_text2)
+            }
+
+            override fun onFailure(call: Call, e: IOException) {
+                gptAnswer = ""
+                Log.i("gpt", "onFailure: ")
+            }
+        })
     }
 }

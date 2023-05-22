@@ -1,11 +1,16 @@
 package com.example.paintapp.API.response
 
 import com.google.gson.annotations.SerializedName
+import retrofit2.http.Body
 
 
 data class Message (
     val role: String = "user",
     val content: String
+)
+data class Request (
+    val model: String,
+    val messages: List<Message>
 )
 
 data class Choice(
