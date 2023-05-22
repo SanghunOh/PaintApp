@@ -2,9 +2,8 @@ package com.example.paintapp.data
 
 import android.app.Application
 import android.graphics.PointF
-import android.util.Log
-import androidx.lifecycle.MutableLiveData
-import com.example.paintapp.BuildConfig
+import com.example.paintapp.API.RetrofitInstance
+import com.example.paintapp.API.response.Message
 import com.example.paintapp.CustomPath
 import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaType
@@ -96,17 +95,11 @@ class PaintCanvasRepository(application: Application) {
                 "  \"content\": \"Hello!!\"}]" +
                 "}"
 
-        json = json.replace("Hello!!", question)
-        val requestBody: RequestBody = json.toRequestBody(mediaType)
-        val request: Request =
-            Request.Builder()
-                .url("https://api.openai.com/v1/chat/completions")
-                .addHeader(
-                    "Authorization",
-                    BuildConfig.API_KEY
-                )
-                .post(requestBody)
-                .build()
+        val gptAnswer =  RetrofitInstance.api
+            .query("gpt-3.5-turbo", listOf(Message("user", question)))
+            .choices[0]
+            .message
+            .content
 
         okHttpClient.newCall(request).enqueue(object : Callback {
             override fun onResponse(call: Call, response: Response) {
@@ -114,18 +107,6 @@ class PaintCanvasRepository(application: Application) {
                 Log.d("gpt", json_obj.toString())
                 val json_array = json_obj.optJSONArray("choices")
 
-                Log.d("gpt", json_array.toString())
-                val json_text = json_array!!.getJSONObject(0).getString("message")
-                val json_obj2 = JSONObject(json_text)
-                val json_text2 = json_obj2.getString("content")
-
-                modelAnswer.postValue(json_text2)
-            }
-
-            override fun onFailure(call: Call, e: IOException) {
-                gptAnswer = ""
-                Log.i("gpt", "onFailure: ")
-            }
-        })
+        return gptAnswer
     }
 }

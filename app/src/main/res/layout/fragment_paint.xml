@@ -7,6 +7,7 @@
     android:layout_gravity="top"
     tools:context=".PaintFragment">
 
+
     <include
         android:id="@+id/paint_view_include"
         layout="@layout/paint_view" />

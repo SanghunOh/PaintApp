@@ -1,7 +1,5 @@
 package com.example.paintapp.API
 
-import android.database.Observable
-import com.example.paintapp.API.response.Message
 import com.example.paintapp.API.response.ModelResponse
 import com.example.paintapp.API.response.Request
 import com.example.paintapp.BuildConfig
