@@ -1,44 +1,37 @@
 package com.example.paintapp
 
 import android.app.Activity
-import android.content.Context
 import android.content.Intent
-import android.graphics.Paint
-import android.graphics.Path
-import android.graphics.RectF
-import androidx.appcompat.app.AppCompatActivity
+import android.graphics.*
+import android.net.Uri
 import android.os.Bundle
-import androidx.drawerlayout.widget.DrawerLayout
-import com.google.android.material.navigation.NavigationView
+import android.util.Log
 import android.widget.Button
 import android.widget.TextView
-import android.net.Uri
-import android.util.Log
 import android.widget.Toast
-import android.widget.Toolbar
-import androidx.activity.result.ActivityResult
-import com.example.paintapp.API.RetrofitInstance
-import com.example.paintapp.API.response.Message
+import androidx.appcompat.app.AppCompatActivity
+import androidx.drawerlayout.widget.DrawerLayout
+import com.google.android.material.navigation.NavigationView
+import com.pspdfkit.annotations.AnnotationType
+import com.pspdfkit.annotations.configuration.InkAnnotationConfiguration
 import com.pspdfkit.configuration.PdfConfiguration
-import com.pspdfkit.configuration.activity.PdfActivityConfiguration
 import com.pspdfkit.configuration.page.PageLayoutMode
 import com.pspdfkit.configuration.page.PageScrollDirection
 import com.pspdfkit.configuration.page.PageScrollMode
-import com.pspdfkit.document.PdfDocument
-import com.pspdfkit.ui.PdfActivity
+import com.pspdfkit.forms.FormType
 import com.pspdfkit.ui.PdfFragment
-import com.pspdfkit.ui.drawable.PdfDrawable
-import com.pspdfkit.ui.drawable.PdfDrawableProvider
 import com.pspdfkit.ui.special_mode.controller.AnnotationCreationController
 import com.pspdfkit.ui.special_mode.controller.AnnotationTool
 import com.pspdfkit.ui.special_mode.manager.AnnotationManager.OnAnnotationCreationModeChangeListener
-import com.pspdfkit.ui.toolbar.*
+import com.pspdfkit.ui.toolbar.AnnotationCreationToolbar
+import com.pspdfkit.ui.toolbar.ToolbarCoordinatorLayout
 import okhttp3.*
-import org.json.JSONObject
-import java.io.IOException
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.toRequestBody
+import org.json.JSONObject
+import java.io.IOException
 import java.util.*
+import kotlin.math.log
 
 
 const val PICK_PDF_FILE = 1001
@@ -97,7 +90,6 @@ class MainActivity : AppCompatActivity(), OnAnnotationCreationModeChangeListener
         val enabledAnnotationTools = AnnotationTool.values().toMutableList()
         enabledAnnotationTools.remove(AnnotationTool.IMAGE)
 
-        val tool = AnnotationTool.SIGNATURE
 
 
         if(requestCode == PICK_PDF_FILE && resultCode== Activity.RESULT_OK){
@@ -113,6 +105,9 @@ class MainActivity : AppCompatActivity(), OnAnnotationCreationModeChangeListener
 
                 val frag = PdfFragment.newInstance(documentUri, config)
 
+                //overlay mode
+
+
                 val transaction = supportFragmentManager.beginTransaction()
                 transaction.add(R.id.frame_layout, frag)
                 transaction.addToBackStack("detail")
@@ -127,6 +122,26 @@ class MainActivity : AppCompatActivity(), OnAnnotationCreationModeChangeListener
                     annotationCreationToolbar = AnnotationCreationToolbar(this)
                     frag.addOnAnnotationCreationModeChangeListener(this)
                     frag.enterAnnotationCreationMode()
+                }
+
+                frag.addOnFormElementClickedListener{ formElement ->
+                    when{
+                        formElement.type == FormType.UNDEFINED->{
+                            Toast.makeText(this, "손글씨 선택", Toast.LENGTH_LONG).show()
+                            true
+                        }
+                        formElement.type == FormType.TEXT->{
+                            Toast.makeText(this,"tttt",Toast.LENGTH_LONG).show()
+                            true
+                        }
+                        formElement.type == FormType.SIGNATURE->{
+                            Toast.makeText(this,"Select Sign",Toast.LENGTH_LONG).show()
+                            true
+                        }
+                        else -> {
+                            false
+                        }
+                    }
                 }
 
 
@@ -200,4 +215,5 @@ class MainActivity : AppCompatActivity(), OnAnnotationCreationModeChangeListener
     override fun onExitAnnotationCreationMode(p0: AnnotationCreationController) {
         annotationCreationToolbar.unbindController()
     }
+
 }
