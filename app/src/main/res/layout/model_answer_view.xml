@@ -5,13 +5,13 @@
     android:layout_height="210dp">
 
         <LinearLayout
-            android:id="@+id/model_answer_top_bar9"
+            android:id="@+id/model_answer_top_bar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:background="@color/cardview_dark_background">
             <ImageView
-                android:id="@+id/minimize9"
+                android:id="@+id/minimize"
                 android:layout_width="20dp"
                 android:layout_height="20dp"
                 android:layout_marginTop="10dp"
@@ -32,7 +32,7 @@
                 android:layout_height="0dp"
                 android:layout_weight="1"/>
             <ImageView
-                android:id="@+id/close9"
+                android:id="@+id/close"
                 android:layout_width="20dp"
                 android:layout_height="20dp"
                 android:layout_margin="10dp"
@@ -41,7 +41,7 @@
         </LinearLayout>
 
         <ScrollView
-            android:id="@+id/answer_field9"
+            android:id="@+id/answer_field"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:background="@drawable/model_answer_background">

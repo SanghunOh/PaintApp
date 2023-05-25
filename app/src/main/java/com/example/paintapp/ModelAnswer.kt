@@ -16,8 +16,9 @@ class ModelAnswer(context: Context) : LinearLayout(context) {
     var isMinimized: Boolean = false
     init {
         params = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
-        closeBtn.setOnClickListener{ closeView() }
-        minimizeBtn.setOnClickListener{ minimizeView() }
+        inflate(context, R.layout.model_answer_view, this)
+//        closeBtn.setOnClickListener{ closeView() }
+//        minimizeBtn.setOnClickListener{ minimizeView() }
     }
 
     private fun closeView() {

@@ -1,5 +1,6 @@
 package com.example.paintapp.UI
 
+import android.app.Activity
 import android.content.Context
 import android.content.res.Resources
 import android.graphics.*
@@ -7,6 +8,7 @@ import android.os.Environment
 import android.util.AttributeSet
 import android.util.DisplayMetrics
 import android.util.Log
+import android.view.Display
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
@@ -112,8 +114,9 @@ class PaintView(context: Context, attributeSet: AttributeSet?) : View(context, a
     private var bottomRight = PointF()
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
-        var x = event.x
-        var y = event.y
+        val x = event.x
+        val y = event.y
+        println("$x, $y")
         if (event.getToolType(0) != MotionEvent.TOOL_TYPE_STYLUS)
             return false
 
@@ -288,10 +291,58 @@ class PaintView(context: Context, attributeSet: AttributeSet?) : View(context, a
         customEventListener?.onStrokeSelected(pos);
     }
 
-    fun canvasToImage(): Canvas {
-        val bitmap = Bitmap.createBitmap(800, 800, Bitmap.Config.ARGB_8888)
+    fun saveToPNG(): Bitmap {
+        val min = PointF(999999F, 999999F)
+        val max = PointF(0F, 0F)
+        val display = context.resources.displayMetrics
+        val deviceWidth = display.widthPixels
+        val deviceHeight = display.heightPixels
+
+
+        val view = View(context)
+        Log.d("IMAGE", "$deviceHeight, $deviceWidth")
+        val bitmap = Bitmap.createBitmap(deviceWidth, deviceHeight, Bitmap.Config.ARGB_8888)
+
         val canvas = Canvas(bitmap)
-        val paint = Paint()
+
+        val paint = strokePaint
+        canvas.drawColor(Color.WHITE)
+
+        paint.color = Color.BLACK
+
+        for(i: Int in 0 until selectedStroke.size) {
+            min.x = min(pathList[selectedStroke[i]].minX, min.x)
+            min.y = min(pathList[selectedStroke[i]].minY, min.y)
+
+            max.x = max(pathList[selectedStroke[i]].maxX, max.x)
+            max.y = max(pathList[selectedStroke[i]].maxY, max.y)
+            canvas.drawPath(pathList[selectedStroke[i]].path, paint)
+        }
+
+        view.draw(canvas)
+
+        return Bitmap.createBitmap(bitmap, (min.x - 50).toInt(), (min.y - 50).toInt(), (max.x - min.x + 100).toInt(), (max.y - min.y + 100).toInt())
+    }
+
+    fun saveBitmapToJPG(bitmap: Bitmap): File {
+        val pictureFileDir = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), context.getString(
+            R.string.app_name))
+        val pictureFile = File(pictureFileDir.path + System.currentTimeMillis() + ".png")
+
+        if (!pictureFileDir.exists()) {
+            pictureFileDir.mkdirs()
+        }
+        var fos: FileOutputStream? = null
+        fos = FileOutputStream(pictureFile)
+        bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos)
+        fos.flush()
+        fos.close()
+
+        return pictureFile
+    }
+    private fun getSelectedCanvas(bitmap: Bitmap): Canvas {
+        val canvas = Canvas(bitmap)
+        val paint = strokePaint
         canvas.drawColor(Color.WHITE)
 
         paint.color = Color.BLACK
@@ -299,24 +350,8 @@ class PaintView(context: Context, attributeSet: AttributeSet?) : View(context, a
         for(i: Int in 0 until selectedStroke.size) {
             canvas.drawPath(pathList[selectedStroke[i]].path, paint)
         }
-
-        var fos: FileOutputStream? = null
-        val pictureFileDir = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), context.getString(
-            R.string.app_name))
-        val pictureFile = File(pictureFileDir.path + System.currentTimeMillis() + ".png")
-        try {
-            fos = FileOutputStream(pictureFile)
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos)
-            fos.flush()
-            fos.close()
-        } catch (e: Exception) {
-            Log.e("testSaveView", "Exception: $e")
-        }
-
-
         return canvas
     }
-
 
     private fun convertDpToPixel(dp: Float): Float {
         return if (context != null) {

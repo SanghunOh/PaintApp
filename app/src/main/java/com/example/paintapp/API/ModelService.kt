@@ -26,7 +26,6 @@ object RetrofitInstance {
 }
 
 interface ModelService {
-
     @Headers("Content-Type: application/json", "Authorization: ${BuildConfig.API_KEY}")
     @POST("/v1/chat/completions/")
     suspend fun query(

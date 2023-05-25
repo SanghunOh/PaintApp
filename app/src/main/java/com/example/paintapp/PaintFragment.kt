@@ -19,6 +19,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.example.paintapp.UI.PaintView
+import com.example.paintapp.data.ImageToTextAPI
 import com.example.paintapp.data.PaintCanvas
 import kotlinx.coroutines.delay
 
@@ -119,7 +120,6 @@ class PaintFragment : Fragment(), CustomEventListener {
         }
 
         val observer = Observer<String> { m ->
-//                val modelAnswer: LinearLayout = layoutInflater.inflate(R.layout.model_answer_view, paintViewContainer,false) as LinearLayout
             val modelAnswer = ModelAnswer(mainActivity)
             modelAnswer.visibility = LinearLayout.VISIBLE
 
@@ -170,7 +170,6 @@ class PaintFragment : Fragment(), CustomEventListener {
                 }
                 return@setOnTouchListener true
             }
-            Log.d("gpt", "WHY??")
             paintViewContainer.addView(modelAnswer)
             modelAnswer.bringToFront()
         }
@@ -192,7 +191,6 @@ class PaintFragment : Fragment(), CustomEventListener {
     }
 
     override fun onStrokeSelected(pos: PointF) {
-        println("${pos.x}, ${pos.y}")
         isStrokeSelected = true
         strokePosition.x = pos.x
         strokePosition.y = pos.y
@@ -203,7 +201,12 @@ class PaintFragment : Fragment(), CustomEventListener {
             isStrokeSelected = false
             paintView.isSelect = false
 
-            viewModel.queryGPT(0, "What is YOLO?", PointF(0F, 0F))
+            val bitmap = paintView.saveToPNG()
+            val file = paintView.saveBitmapToJPG(bitmap)
+
+            // http request to server
+            val question = ImageToTextAPI.imageToText(file)
+            viewModel.queryGPT(0, question!!, PointF(0F, 0F))
         }
     }
 }

@@ -75,6 +75,11 @@
             android:layout_height="30dp"
             android:layout_margin="10dp"
             android:background="@drawable/ic_gpt"/>
+        <ImageButton
+            android:id="@+id/summarizeBtn"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:background="@drawable/file"/>
     </LinearLayout>
 
     <FrameLayout
