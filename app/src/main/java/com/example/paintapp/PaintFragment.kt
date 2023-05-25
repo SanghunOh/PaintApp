@@ -205,8 +205,9 @@ class PaintFragment : Fragment(), CustomEventListener {
             val file = paintView.saveBitmapToJPG(bitmap)
 
             // http request to server
-            val question = ImageToTextAPI.imageToText(file)
-            viewModel.queryGPT(0, question!!, PointF(0F, 0F))
+//            val question = ImageToTextAPI.imageToText(file)
+//            viewModel.queryGPT(0, question!!, PointF(0F, 0F))
+            viewModel.queryGPT(0, "염선호", PointF(0F, 0F))
         }
     }
 }

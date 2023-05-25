@@ -11,6 +11,7 @@ import android.graphics.Bitmap
 import android.graphics.*
 import android.net.Uri
 import android.os.Bundle
+import android.provider.OpenableColumns
 import androidx.drawerlayout.widget.DrawerLayout
 import com.google.android.material.navigation.NavigationView
 import android.view.MotionEvent
@@ -22,19 +23,14 @@ import androidx.lifecycle.ViewModelProvider
 import com.example.paintapp.API.RetrofitInstance
 import com.example.paintapp.API.response.Message
 import android.util.Log
-import android.widget.Button
-import android.widget.TextView
-import android.provider.OpenableColumns
 import android.view.Menu
 import android.view.MenuItem
-import android.widget.ImageButton
+import android.widget.Button
+import android.widget.TextView
 import android.widget.Toast
 import androidx.core.view.GravityCompat
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentTransaction
-import androidx.navigation.ui.NavigationUI
-import com.pspdfkit.annotations.AnnotationType
-import com.pspdfkit.annotations.configuration.InkAnnotationConfiguration
+import com.pspdfkit.annotations.Annotation
 import com.pspdfkit.configuration.PdfConfiguration
 import com.pspdfkit.configuration.page.PageLayoutMode
 import com.pspdfkit.configuration.page.PageScrollDirection
@@ -42,8 +38,11 @@ import com.pspdfkit.configuration.page.PageScrollMode
 import com.pspdfkit.forms.FormType
 import com.pspdfkit.ui.PdfFragment
 import com.pspdfkit.ui.special_mode.controller.AnnotationCreationController
+import com.pspdfkit.ui.special_mode.controller.AnnotationSelectionController
 import com.pspdfkit.ui.special_mode.controller.AnnotationTool
+import com.pspdfkit.ui.special_mode.manager.AnnotationManager
 import com.pspdfkit.ui.special_mode.manager.AnnotationManager.OnAnnotationCreationModeChangeListener
+import com.pspdfkit.ui.special_mode.manager.AnnotationManager.OnAnnotationSelectedListener
 import com.pspdfkit.ui.toolbar.AnnotationCreationToolbar
 import com.pspdfkit.ui.toolbar.ToolbarCoordinatorLayout
 import okhttp3.*
@@ -71,6 +70,7 @@ class MainActivity : AppCompatActivity(),NavigationView.OnNavigationItemSelected
     private lateinit var paintViewContainer: FrameLayout
     private lateinit var tvStorageInfo: TextView
     private lateinit var global_frag: PdfFragment
+    private lateinit var btnNavi: ImageButton
     private lateinit var menu: Menu
     private var pdf_count = 1
     private var strokePosition: PointF = PointF(0F, 0F)
@@ -165,18 +165,11 @@ class MainActivity : AppCompatActivity(),NavigationView.OnNavigationItemSelected
         }
         viewModel.modelAnswer.observe(this, observer)
 
-//        val selectBrush = findViewById<ImageView>(R.id.selectBrush)
-//        val brushBtnGroup = findViewById<LinearLayout>(R.id.brushGroup)
-//        val redBtn = findViewById<ImageButton>(R.id.redColor)
-//        val blueBtn = findViewById<ImageButton>(R.id.blueColor)
-//        val blackBtn = findViewById<ImageButton>(R.id.blackColor)
-//        val clearBtn = findViewById<ImageView>(R.id.clear)
         val checkButton = findViewById<Button>(R.id.btnAddPdf)
 
         menu = navigationView.menu
         menu.add(Menu.NONE, Menu.FIRST, Menu.NONE, "메인 메뉴")
         displayView(menu.getItem(0))
-
 
         val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply{
             addCategory(Intent.CATEGORY_OPENABLE)
@@ -199,7 +192,6 @@ class MainActivity : AppCompatActivity(),NavigationView.OnNavigationItemSelected
         enabledAnnotationTools.remove(AnnotationTool.IMAGE)
 
 
-
         if(requestCode == PICK_PDF_FILE && resultCode== Activity.RESULT_OK){
             resultData?.data?.also{uri->
 
@@ -213,11 +205,33 @@ class MainActivity : AppCompatActivity(),NavigationView.OnNavigationItemSelected
 
                 val frag = PdfFragment.newInstance(documentUri, config)
 
+//                frag.addOnAnnotationSelectedListener(object : AnnotationManager.OnAnnotationSelectedListener {
+//                    override fun onPrepareAnnotationSelection(controller: AnnotationSelectionController, annotation: Annotation, annotationCreated: Boolean): Boolean {
+//                        // Returning `false` here would prevent the annotation from being selected.
+//                        return true
+//                    }
+//
+//                    override fun onAnnotationSelected(annotation: Annotation, annotationCreated: Boolean) {
+////                        Log.i(TAG, "The annotation was selected.")
+////                        annotation.
+//                    }
+//                })
+
                 pdflist.add(frag)
                 menu.add(Menu.NONE, Menu.FIRST+pdf_count, Menu.NONE, getFileName(uri))
                 val item = menu.getItem(pdf_count)
                 pdf_count+=1
                 displayView(item)
+
+                changeMode = findViewById(R.id.changeEditmodeBtn)
+                changeMode.setOnClickListener{
+                    //Toast.makeText(this,"Toolbar 표시해라",Toast.LENGTH_LONG).show()
+                    //frag.enterAnnotationCreationMode(tool)
+//                    toolbarCoordinatorLayout = findViewById(R.id.toolbarCoordinatorLayout)
+                    annotationCreationToolbar = AnnotationCreationToolbar(this)
+                    frag.addOnAnnotationCreationModeChangeListener(this)
+                    frag.enterAnnotationCreationMode()
+                }
 
 
                 answerBtn = findViewById(R.id.answerBtn)
@@ -287,9 +301,9 @@ class MainActivity : AppCompatActivity(),NavigationView.OnNavigationItemSelected
         displayView(item)
         return false
     }
-    fun displayView(item:MenuItem){
-        var frag:Fragment? = null
-        var idx= (item.itemId - Menu.FIRST)
+    private fun displayView(item:MenuItem){
+        var frag: Fragment? = null
+        val idx= (item.itemId - Menu.FIRST)
         if(idx == 0)
             frag = paintFragment
         else if(idx >= 1)
