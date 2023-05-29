@@ -82,7 +82,11 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/app_add_pdf" />
-
+            <Button
+                android:id="@+id/btnSendImage"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Send Image"/>
             <ImageButton
                 android:id="@+id/answerBtn"
                 android:layout_width="30dp"

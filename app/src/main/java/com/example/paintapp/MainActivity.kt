@@ -1,6 +1,7 @@
 package com.example.paintapp
 
 import android.app.Activity
+import android.content.ContentValues.TAG
 import android.content.Intent
 import android.graphics.Paint
 import android.graphics.Path
@@ -10,7 +11,9 @@ import android.database.Cursor
 import android.graphics.Bitmap
 import android.graphics.*
 import android.net.Uri
+import android.os.AsyncTask
 import android.os.Bundle
+import android.provider.MediaStore
 import android.provider.OpenableColumns
 import androidx.drawerlayout.widget.DrawerLayout
 import com.google.android.material.navigation.NavigationView
@@ -49,15 +52,21 @@ import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
+import java.io.DataOutputStream
+import java.io.File
+import java.io.FileInputStream
 import java.io.IOException
 import java.util.*
 import kotlin.math.log
 import java.lang.Float.max
 import java.lang.Float.min
+import java.net.HttpURLConnection
+import java.net.URL
 
 
 var pdflist = mutableListOf<PdfFragment>()
 const val PICK_PDF_FILE = 1001
+const val REQUEST_SELECT_IMAGE = 2001
 class MainActivity : AppCompatActivity(),NavigationView.OnNavigationItemSelectedListener, OnAnnotationCreationModeChangeListener {
 //    private lateinit var toolbar : Toolbar
 
@@ -72,6 +81,7 @@ class MainActivity : AppCompatActivity(),NavigationView.OnNavigationItemSelected
     private lateinit var global_frag: PdfFragment
     private lateinit var btnNavi: ImageButton
     private lateinit var menu: Menu
+    private lateinit var btnSendImage : Button
     private var pdf_count = 1
     private var strokePosition: PointF = PointF(0F, 0F)
 
@@ -179,13 +189,96 @@ class MainActivity : AppCompatActivity(),NavigationView.OnNavigationItemSelected
         btnAddPdf.setOnClickListener {
             startActivityForResult(intent, PICK_PDF_FILE)
         }
+
+        btnSendImage = findViewById(R.id.btnSendImage)
+        btnSendImage.setOnClickListener{
+            val intent = Intent(Intent.ACTION_GET_CONTENT)
+            intent.type = "image/*"
+            startActivityForResult(intent,REQUEST_SELECT_IMAGE)
+            //uploadImage("C:\\Users\\SunhoYum\\Desktop\\서강대학교\\6학기\\캡스톤디자인1\\프로젝트\\제안발표\\이미지\\cnn.png")
+        }
+    }
+
+    private fun uploadImage(imageFilePath : String){
+        val uploadTask = ImageUploadTask()
+        uploadTask.execute(imageFilePath)
+    }
+
+    private inner class ImageUploadTask : AsyncTask<String, Void, Boolean>(){
+        override fun doInBackground(vararg params: String?): Boolean {
+            val imageFilePath = params[0]
+            val file = File(imageFilePath)
+
+            val url = URL("http://localhost:5000/upload")
+            val connection = url.openConnection() as HttpURLConnection
+            connection.requestMethod = "POST"
+            connection.doOutput = true
+
+            val boundary = "*****"
+            val lineEnd = "\r\n"
+
+            connection.setRequestProperty("Content-Type", "multipart/form-data; boundary=$boundary")
+
+            val fileInputStream = FileInputStream(file)
+            val outputStream = DataOutputStream(connection.outputStream)
+
+            outputStream.writeBytes("--$boundary$lineEnd")
+            outputStream.writeBytes("Content-Disposition: form-data; name=\"image\"; filename=\"${file.name}\"$lineEnd")
+            outputStream.writeBytes(lineEnd)
+
+            val buffer = ByteArray(1024)
+            var bytesRead: Int
+
+            while (fileInputStream.read(buffer).also { bytesRead = it } != -1) {
+                outputStream.write(buffer, 0, bytesRead)
+            }
+
+            outputStream.writeBytes(lineEnd)
+            outputStream.writeBytes("--$boundary--$lineEnd")
+
+            val responseCode = connection.responseCode
+            val responseMessage = connection.responseMessage
+
+            Log.d("ImageUpload", "Response Code: $responseCode")
+            Log.d("ImageUpload", "Response Message: $responseMessage")
+
+            fileInputStream.close()
+            outputStream.flush()
+            outputStream.close()
+
+            return responseCode == HttpURLConnection.HTTP_OK
+        }
+
+        override fun onPostExecute(result: Boolean) {
+            super.onPostExecute(result)
+
+            if (result) {
+                Log.d("PostSucceed","Sibal Fucking Succeed")
+            } else {
+                // Error occurred while uploading the file
+                // Handle the error appropriately
+                Log.d("PostFailed","Fail")
+            }
+        }
+    }
+
+    private fun getPathFromUri(uri: Uri?): String? {
+        uri?.let {
+            val projection = arrayOf(MediaStore.Images.Media.DATA)
+            val cursor = contentResolver.query(uri, projection, null, null, null)
+            cursor?.use {
+                val columnIndex = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA)
+                cursor.moveToFirst()
+                return cursor.getString(columnIndex)
+            }
+        }
+        return null
     }
 
     override fun onActivityResult(requestCode:Int, resultCode:Int,resultData:Intent?){
         super.onActivityResult(requestCode, resultCode, resultData)
         val annotationTools = mutableListOf(*AnnotationTool.values())
         toolbarCoordinatorLayout = findViewById(R.id.toolbarCoordinatorLayout) as ToolbarCoordinatorLayout
-
         annotationTools.remove(AnnotationTool.MAGIC_INK)
 
         val enabledAnnotationTools = AnnotationTool.values().toMutableList()
@@ -205,17 +298,16 @@ class MainActivity : AppCompatActivity(),NavigationView.OnNavigationItemSelected
 
                 val frag = PdfFragment.newInstance(documentUri, config)
 
-//                frag.addOnAnnotationSelectedListener(object : AnnotationManager.OnAnnotationSelectedListener {
-//                    override fun onPrepareAnnotationSelection(controller: AnnotationSelectionController, annotation: Annotation, annotationCreated: Boolean): Boolean {
-//                        // Returning `false` here would prevent the annotation from being selected.
-//                        return true
-//                    }
-//
-//                    override fun onAnnotationSelected(annotation: Annotation, annotationCreated: Boolean) {
-////                        Log.i(TAG, "The annotation was selected.")
-////                        annotation.
-//                    }
-//                })
+                frag.addOnAnnotationSelectedListener(object : AnnotationManager.OnAnnotationSelectedListener {
+                    override fun onPrepareAnnotationSelection(controller: AnnotationSelectionController, annotation: Annotation, annotationCreated: Boolean): Boolean {
+                        // Returning `false` here would prevent the annotation from being selected.
+                        return true
+                    }
+
+                    override fun onAnnotationSelected(annotation: Annotation, annotationCreated: Boolean) {
+                        Log.i(TAG, "The annotation was selected.")
+                    }
+                })
 
                 pdflist.add(frag)
                 menu.add(Menu.NONE, Menu.FIRST+pdf_count, Menu.NONE, getFileName(uri))
@@ -283,6 +375,16 @@ class MainActivity : AppCompatActivity(),NavigationView.OnNavigationItemSelected
                             }
                         })
                     }
+                }
+            }
+        }
+        // imageFile 선택했을 때 Action
+        if(requestCode == REQUEST_SELECT_IMAGE && resultCode == Activity.RESULT_OK){
+            if (requestCode == REQUEST_SELECT_IMAGE && resultCode == Activity.RESULT_OK) {
+                val selectedImageUri = resultData?.data
+                val selectedImagePath = getPathFromUri(selectedImageUri)
+                selectedImagePath?.let {
+                    uploadImage(it)
                 }
             }
         }
