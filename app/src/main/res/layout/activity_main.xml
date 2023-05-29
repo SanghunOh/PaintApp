@@ -28,7 +28,7 @@
                 android:layout_width="30dp"
                 android:layout_height="30dp"
                 android:layout_margin="10dp"
-                android:background="@drawable/pdf_icon" />
+                android:background="@drawable/pdf_icon"/>
 
             <ImageButton
                 android:id="@+id/selectBrush"
@@ -83,7 +83,7 @@
                 android:layout_height="wrap_content"
                 android:text="@string/app_add_pdf" />
             <Button
-                android:id="@+id/btnSendImage"
+                android:id="@+id/btnSendImasge"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Send Image"/>

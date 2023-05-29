@@ -190,7 +190,7 @@ class MainActivity : AppCompatActivity(),NavigationView.OnNavigationItemSelected
             startActivityForResult(intent, PICK_PDF_FILE)
         }
 
-        btnSendImage = findViewById(R.id.btnSendImage)
+        btnSendImage = findViewById(R.id.btnSendImasge)
         btnSendImage.setOnClickListener{
             val intent = Intent(Intent.ACTION_GET_CONTENT)
             intent.type = "image/*"
