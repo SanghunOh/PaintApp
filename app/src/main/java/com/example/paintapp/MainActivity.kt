@@ -13,6 +13,7 @@ import android.graphics.*
 import android.net.Uri
 import android.os.AsyncTask
 import android.os.Bundle
+import android.os.Environment
 import android.provider.MediaStore
 import android.provider.OpenableColumns
 import androidx.drawerlayout.widget.DrawerLayout
@@ -52,10 +53,7 @@ import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
-import java.io.DataOutputStream
-import java.io.File
-import java.io.FileInputStream
-import java.io.IOException
+import java.io.*
 import java.util.*
 import kotlin.math.log
 import java.lang.Float.max
@@ -305,7 +303,38 @@ class MainActivity : AppCompatActivity(),NavigationView.OnNavigationItemSelected
                     }
 
                     override fun onAnnotationSelected(annotation: Annotation, annotationCreated: Boolean) {
-                        Log.i(TAG, "The annotation was selected.")
+                        Log.d("HAHAHA", "AnnotationSelected!!")
+                        val annotationWidth = annotation.boundingBox.width()
+                        val annotationHeight = -annotation.boundingBox.height()
+
+                        val bitmapWidth = 400
+                        val heightFactor = bitmapWidth / annotationWidth
+                        val bitmapHeight = (annotationHeight * heightFactor).toInt()
+
+
+
+                        val bitmap = Bitmap.createBitmap(
+                            bitmapWidth,
+                            bitmapHeight,
+                            Bitmap.Config.ARGB_8888)
+                        annotation.renderToBitmap(bitmap)
+
+
+
+
+                        val pictureFileDir = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), "PaintApp")
+                        val pictureFile = File(pictureFileDir.path + System.currentTimeMillis() + ".jpeg")
+
+                        if (!pictureFileDir.exists()) {
+                            pictureFileDir.mkdirs()
+                        }
+                        var fos: FileOutputStream? = null
+                        fos = FileOutputStream(pictureFile)
+                        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos)
+                        fos.flush()
+                        fos.close()
+
+
                     }
                 })
 
