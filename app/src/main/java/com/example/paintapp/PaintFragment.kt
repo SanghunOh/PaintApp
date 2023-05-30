@@ -1,10 +1,10 @@
 package com.example.paintapp
 
 import android.content.Context
-import android.graphics.Color
-import android.graphics.Path
-import android.graphics.PointF
+import android.graphics.*
+import android.net.Uri
 import android.os.Bundle
+import android.util.Base64
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.MotionEvent
@@ -13,15 +13,15 @@ import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.widget.*
-import androidx.core.view.marginLeft
-import androidx.core.view.marginTop
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.example.paintapp.UI.PaintView
-import com.example.paintapp.data.ImageToTextAPI
 import com.example.paintapp.data.PaintCanvas
-import kotlinx.coroutines.delay
+import org.json.JSONObject
+import java.io.*
+import java.net.HttpURLConnection
+import java.net.URL
 
 
 class PaintFragment : Fragment(), CustomEventListener {
@@ -196,18 +196,17 @@ class PaintFragment : Fragment(), CustomEventListener {
         strokePosition.y = pos.y
     }
 
-    fun answerBtnOnClickListener() {
-//        onGptRequest(paintView!!)
-    }
-
-    fun onGptRequest() {
-        println("GPT")
+    private fun onGptRequest(paintView: PaintView) {
         if (isStrokeSelected) {
             isStrokeSelected = false
-            paintView?.isSelect = false
+            paintView.isSelect = false
 
-            val bitmap = paintView?.saveToPNG()
-            val file = paintView?.saveBitmapToJPG(bitmap!!)
+            val bitmap = paintView.saveToPNG()
+            val file = OCR_API(bitmap)
+
+            print("-------------------------------------")
+            print(file)
+            //val file = paintView.saveBitmapToJPG(bitmap)
 
             // http request to server
 //            val question = ImageToTextAPI.imageToText(file)
@@ -216,14 +215,88 @@ class PaintFragment : Fragment(), CustomEventListener {
         }
     }
 
-    fun updateView() {
-        if (paintView != null) {
-            println("invalidate")
-            paintView!!.invalidate()
-//            paintView!!.onDraw
+  fun OCR_API(bitmap: Bitmap):String{
+            if (bitmap != null) {
+                val base64Image: String = encodeImageToBase64(bitmap)
+
+                // 서버로 이미지 전송
+                return sendImageToServer(base64Image)
+            }
+      else{
+          return "falied"
+            }
+    }
+
+
+    private fun encodeImageToBase64(imageBitmap: Bitmap): String {
+        val baos = ByteArrayOutputStream()
+        imageBitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos)
+        val imageBytes = baos.toByteArray()
+        return Base64.encodeToString(imageBytes, Base64.DEFAULT)
+    }
+    private fun sendImageToServer(base64Image: String):String {
+        var response = ""
+        try {
+            val thread = Thread {
+                try {
+                    val url = URL("http://10.0.1.108:80/upload")
+                    val connection = url.openConnection() as HttpURLConnection
+                    connection.requestMethod = "POST"
+                    connection.setRequestProperty("Content-Type", "application/json")
+                    connection.doOutput = true
+
+                    // JSON 데이터 생성
+                    val requestData = JSONObject()
+                    requestData.put("image", base64Image)
+
+                    // 데이터 전송
+                    val outputStream = DataOutputStream(connection.outputStream)
+                    outputStream.writeBytes(requestData.toString())
+                    outputStream.flush()
+                    outputStream.close()
+
+                    // 응답 코드 확인
+                    val responseCode = connection.responseCode
+                    if (responseCode == HttpURLConnection.HTTP_OK) {
+                        // 응답 데이터 읽기
+                        val inputStream = connection.inputStream
+                        response = readInputStream(inputStream)
+                        println(response)
+
+                        // 서버에서 보낸 응답 처리
+                        handleServerResponse(response)
+
+
+                    } else {
+                        println("POST request failed. Response Code: $responseCode")
+                    }
+
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
+            thread.start()
+            thread.join()
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
-        else {
-            println("NULL")
+        return response
+    }
+
+
+    @Throws(IOException::class)
+    private fun readInputStream(inputStream: InputStream): String {
+        val reader = BufferedReader(InputStreamReader(inputStream))
+        val stringBuilder = StringBuilder()
+        var line: String?
+        while (reader.readLine().also { line = it } != null) {
+            stringBuilder.append(line)
         }
+        reader.close()
+        return stringBuilder.toString()
+    }
+
+    private fun handleServerResponse(response: String) {
+        Log.d("Server Response", response)
     }
 }

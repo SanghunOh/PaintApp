@@ -1,6 +1,7 @@
 package com.example.paintapp
 
 import android.app.Activity
+import android.content.ContentValues.TAG
 import android.content.Intent
 import android.graphics.Paint
 import android.graphics.Path
@@ -8,14 +9,21 @@ import android.graphics.PointF
 import androidx.appcompat.app.AppCompatActivity
 import android.database.Cursor
 import android.net.Uri
+import android.os.AsyncTask
 import android.os.Bundle
+import android.provider.MediaStore
 import android.provider.OpenableColumns
 import androidx.drawerlayout.widget.DrawerLayout
 import com.google.android.material.navigation.NavigationView
 import android.view.MotionEvent
 import android.view.View
 import android.widget.*
+import androidx.activity.result.ActivityResult
 import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
+import com.example.paintapp.API.RetrofitInstance
+import com.example.paintapp.API.response.Message
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.Button
@@ -23,10 +31,12 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.core.view.GravityCompat
 import androidx.fragment.app.Fragment
+import com.pspdfkit.annotations.Annotation
 import com.pspdfkit.configuration.PdfConfiguration
 import com.pspdfkit.configuration.page.PageLayoutMode
 import com.pspdfkit.configuration.page.PageScrollDirection
 import com.pspdfkit.configuration.page.PageScrollMode
+import com.pspdfkit.forms.FormType
 import com.pspdfkit.ui.PdfFragment
 import com.pspdfkit.ui.special_mode.controller.AnnotationCreationController
 import com.pspdfkit.ui.special_mode.controller.AnnotationSelectionController
@@ -35,6 +45,7 @@ import com.pspdfkit.listeners.scrolling.ScrollState
 import com.pspdfkit.ui.special_mode.controller.AnnotationTool
 import com.pspdfkit.ui.special_mode.manager.AnnotationManager
 import com.pspdfkit.ui.special_mode.manager.AnnotationManager.OnAnnotationCreationModeChangeListener
+import com.pspdfkit.ui.special_mode.manager.AnnotationManager.OnAnnotationSelectedListener
 import com.pspdfkit.ui.toolbar.AnnotationCreationToolbar
 import com.pspdfkit.ui.toolbar.ToolbarCoordinatorLayout
 import okhttp3.*
@@ -42,6 +53,10 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
 import java.io.IOException
+import java.util.*
+import kotlin.math.log
+import java.lang.Float.max
+import java.lang.Float.min
 
 
 var pdflist = mutableListOf<PdfFragment>()
@@ -60,6 +75,7 @@ class MainActivity : AppCompatActivity(),NavigationView.OnNavigationItemSelected
     private lateinit var frag: PdfFragment
     private lateinit var btnNavi: ImageButton
     private lateinit var menu: Menu
+    private lateinit var btnSendImage : Button
     private var pdf_count = 1
     private var strokePosition: PointF = PointF(0F, 0F)
 
@@ -200,23 +216,16 @@ class MainActivity : AppCompatActivity(),NavigationView.OnNavigationItemSelected
 
                 frag = PdfFragment.newInstance(documentUri, config)
 
-//                frag.addOnAnnotationSelectedListener(object : AnnotationManager.OnAnnotationSelectedListener {
-//
-//                    override fun onPrepareAnnotationSelection(
-//                        p0: AnnotationSelectionController,
-//                        p1: com.pspdfkit.annotations.Annotation,
-//                        p2: Boolean
-//                    ): Boolean {
-//
-//                    }
-//
-//                    override fun onAnnotationSelected(
-//                        p0: com.pspdfkit.annotations.Annotation,
-//                        p1: Boolean
-//                    ) {
-//                        println(p0.)
-//                    }
-//                })
+                frag.addOnAnnotationSelectedListener(object : AnnotationManager.OnAnnotationSelectedListener {
+                    override fun onPrepareAnnotationSelection(controller: AnnotationSelectionController, annotation: Annotation, annotationCreated: Boolean): Boolean {
+                        // Returning `false` here would prevent the annotation from being selected.
+                        return true
+                    }
+
+                    override fun onAnnotationSelected(annotation: Annotation, annotationCreated: Boolean) {
+                        Log.i(TAG, "The annotation was selected.")
+                    }
+                })
 
                 pdflist.add(frag)
                 menu.add(Menu.NONE, Menu.FIRST+pdf_count, Menu.NONE, getFileName(uri))

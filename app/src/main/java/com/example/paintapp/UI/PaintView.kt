@@ -244,7 +244,7 @@ class PaintView(context: Context, attributeSet: AttributeSet?) : View(context, a
             else -> return false
         }
 
-        invalidate() // important inform non-ui thread that some changes have been done
+        postInvalidate() // important inform non-ui thread that some changes have been done
         return false;
     }
 
@@ -321,13 +321,13 @@ class PaintView(context: Context, attributeSet: AttributeSet?) : View(context, a
 
         view.draw(canvas)
 
-        return Bitmap.createBitmap(bitmap, (min.x - 100).toInt(), (min.y - 100).toInt(), (max.x - min.x + 200).toInt(), (max.y - min.y + 200).toInt())
+        return Bitmap.createBitmap(bitmap, (min.x - 50).toInt(), (min.y - 50).toInt(), (max.x - min.x + 100).toInt(), (max.y - min.y + 100).toInt())
     }
 
     fun saveBitmapToJPG(bitmap: Bitmap): File {
         val pictureFileDir = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), context.getString(
             R.string.app_name))
-        val pictureFile = File(pictureFileDir.path + System.currentTimeMillis() + ".jpg")
+        val pictureFile = File(pictureFileDir.path + System.currentTimeMillis() + ".png")
 
         if (!pictureFileDir.exists()) {
             pictureFileDir.mkdirs()
