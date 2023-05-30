@@ -327,8 +327,8 @@ class PaintView(context: Context, attributeSet: AttributeSet?) : View(context, a
     fun saveBitmapToJPG(bitmap: Bitmap): File {
         val pictureFileDir = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), context.getString(
             R.string.app_name))
-        val pictureFile = File(pictureFileDir.path + System.currentTimeMillis() + ".png")
-
+        //val pictureFile = File(pictureFileDir.path + System.currentTimeMillis() + ".png")
+        val pictureFile = File(pictureFileDir.path + System.currentTimeMillis() + ".jpg")
         if (!pictureFileDir.exists()) {
             pictureFileDir.mkdirs()
         }
