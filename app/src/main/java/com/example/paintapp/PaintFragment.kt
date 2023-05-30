@@ -26,13 +26,67 @@ import kotlinx.coroutines.delay
 
 class PaintFragment : Fragment(), CustomEventListener {
     private lateinit var mainActivity: MainActivity
-    private lateinit var paintView: PaintView
+    private var paintView: PaintView? = null
     private lateinit var viewModel: PaintViewModel
     private lateinit var paintViewContainer: FrameLayout
     private lateinit var paintFragmentView: View
     private var isStrokeSelected = false
     private var strokePosition: PointF = PointF(0F, 0F)
 
+    private val observer = Observer<String> { m ->
+        val modelAnswer = ModelAnswer(mainActivity)
+        modelAnswer.visibility = LinearLayout.VISIBLE
+
+        val layoutParams = LinearLayout.LayoutParams(800, 500)
+        layoutParams.leftMargin = strokePosition.x.toInt()
+        layoutParams.topMargin = strokePosition.y.toInt()
+
+        modelAnswer.layoutParams = layoutParams
+
+        val closeBtn = modelAnswer.findViewById<ImageView>(R.id.close)
+        val minimizeBtn = modelAnswer.findViewById<ImageView>(R.id.minimize)
+        val questionBarTextView = modelAnswer.findViewById<TextView>(R.id.question_bar)
+        val questionTextView = modelAnswer.findViewById<TextView>(R.id.question)
+        val answerTextView = modelAnswer.findViewById<TextView>(R.id.answer)
+        val modelAnswerTopBar = modelAnswer.findViewById<LinearLayout>(R.id.model_answer_top_bar)
+        val scrollView = modelAnswer.findViewById<ScrollView>(R.id.answer_field)
+
+        questionTextView.text = context?.getString(R.string.app_gpt_question, "What is YOLO") ?: ""
+        questionBarTextView.text = context?.getString(R.string.app_gpt_question, "What is YOLO") ?: ""
+        answerTextView.text = context?.getString(R.string.app_gpt_answer, m)
+
+        closeBtn.setOnClickListener {
+            paintViewContainer.removeView(modelAnswer)
+        }
+
+        minimizeBtn.setOnClickListener {
+            if (scrollView.visibility == VISIBLE)
+                scrollView.visibility = GONE
+            else if(scrollView.visibility == GONE)
+                scrollView.visibility = VISIBLE
+        }
+
+        var moveX = strokePosition.x
+        var moveY = strokePosition.y
+        modelAnswerTopBar.setOnTouchListener { _, event->
+            when(event.action) {
+                MotionEvent.ACTION_DOWN -> {
+                    moveX = modelAnswer.x - event.rawX
+                    moveY = modelAnswer.y - event.rawY
+                }
+                MotionEvent.ACTION_MOVE -> {
+                    modelAnswer.animate()
+                        .x(event.rawX + moveX)
+                        .y(event.rawY + moveY)
+                        .setDuration(0)
+                        .start()
+                }
+            }
+            return@setOnTouchListener true
+        }
+        paintViewContainer.addView(modelAnswer)
+        modelAnswer.bringToFront()
+    }
     companion object {
         fun newInstance() = PaintFragment()
     }
@@ -50,6 +104,10 @@ class PaintFragment : Fragment(), CustomEventListener {
         return inflater.inflate(R.layout.fragment_paint, container, false)
     }
 
+    override fun onResume() {
+        super.onResume()
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -57,7 +115,7 @@ class PaintFragment : Fragment(), CustomEventListener {
 
         viewModel = ViewModelProvider(this)[PaintViewModel::class.java]
         viewModel.pathList.observe(viewLifecycleOwner, Observer<ArrayList<CustomPath>> {paths ->
-            paintView.pathList = paths
+            paintView?.pathList = paths
         })
 
         viewModel.addFile(PaintCanvas("Blank"))
@@ -72,40 +130,40 @@ class PaintFragment : Fragment(), CustomEventListener {
         paintViewContainer = mainActivity.findViewById(R.id.paint_view_container)
 
         selectBrush.setOnClickListener {
-            paintView.displaySelectBox = false
-            paintView.isSelect = false
-            paintView.selectedStroke.clear()
-            if (paintView.selectMode) {
-                paintView.selectMode = false
+            paintView?.displaySelectBox = false
+            paintView?.isSelect = false
+            paintView?.selectedStroke?.clear()
+            if (paintView?.selectMode!!) {
+                paintView?.selectMode = false
                 brushBtnGroup.visibility = View.VISIBLE
             }
             else {
-                paintView.selectMode = true
+                paintView?.selectMode = true
                 brushBtnGroup.visibility = View.GONE
             }
         }
         redBtn.setOnClickListener {
-            if (!paintView.selectMode) {
-                paintView.currentBrush = Color.RED
-                currentColor(paintView.currentBrush)
+            if (!paintView?.selectMode!!) {
+                paintView?.currentBrush = Color.RED
+                paintView?.currentBrush?.let { it1 -> currentColor(it1) }
             }
         }
         blueBtn.setOnClickListener {
-            if (!paintView.selectMode) {
-                paintView.currentBrush = Color.BLUE
-                currentColor(paintView.currentBrush)
+            if (!paintView?.selectMode!!) {
+                paintView?.currentBrush = Color.BLUE
+                paintView?.currentBrush?.let { it1 -> currentColor(it1) }
             }
         }
         blackBtn.setOnClickListener {
-            if (!paintView.selectMode) {
-                paintView.currentBrush = Color.BLACK
-                currentColor(paintView.currentBrush)
+            if (!paintView?.selectMode!!) {
+                paintView?.currentBrush = Color.BLACK
+                paintView?.currentBrush?.let { it1 -> currentColor(it1) }
             }
         }
         clearBtn.setOnClickListener {
-            if (!paintView.selectMode) {
+            if (!paintView?.selectMode!!) {
                 viewModel.clearPath()
-                paintView.pathList.clear()
+                paintView?.pathList?.clear()
                 MainActivity.path.reset()
             }
         }
@@ -113,66 +171,8 @@ class PaintFragment : Fragment(), CustomEventListener {
         val paintViewInclude = view.findViewById<FrameLayout>(R.id.paint_view_include)
         paintView = paintViewInclude.findViewById(R.id.paint_view)
         paintView = view.findViewById(R.id.paint_view)
-        paintView.setCustomEventListener(this)
+        paintView?.setCustomEventListener(this)
 
-        gptRequest.setOnClickListener {
-            onGptRequest(paintView)
-        }
-
-        val observer = Observer<String> { m ->
-            val modelAnswer = ModelAnswer(mainActivity)
-            modelAnswer.visibility = LinearLayout.VISIBLE
-
-            val layoutParams = LinearLayout.LayoutParams(800, 500)
-            layoutParams.leftMargin = strokePosition.x.toInt()
-            layoutParams.topMargin = strokePosition.y.toInt()
-
-            modelAnswer.layoutParams = layoutParams
-
-            val closeBtn = modelAnswer.findViewById<ImageView>(R.id.close)
-            val minimizeBtn = modelAnswer.findViewById<ImageView>(R.id.minimize)
-            val questionBarTextView = modelAnswer.findViewById<TextView>(R.id.question_bar)
-            val questionTextView = modelAnswer.findViewById<TextView>(R.id.question)
-            val answerTextView = modelAnswer.findViewById<TextView>(R.id.answer)
-            val modelAnswerTopBar = modelAnswer.findViewById<LinearLayout>(R.id.model_answer_top_bar)
-            val scrollView = modelAnswer.findViewById<ScrollView>(R.id.answer_field)
-
-            questionTextView.text = context?.getString(R.string.app_gpt_question, "What is YOLO") ?: ""
-            questionBarTextView.text = context?.getString(R.string.app_gpt_question, "What is YOLO") ?: ""
-            answerTextView.text = context?.getString(R.string.app_gpt_answer, m)
-
-            closeBtn.setOnClickListener {
-                paintViewContainer.removeView(modelAnswer)
-            }
-
-            minimizeBtn.setOnClickListener {
-                if (scrollView.visibility == VISIBLE)
-                    scrollView.visibility = GONE
-                else if(scrollView.visibility == GONE)
-                    scrollView.visibility = VISIBLE
-            }
-
-            var moveX = strokePosition.x
-            var moveY = strokePosition.y
-            modelAnswerTopBar.setOnTouchListener { v, event->
-                when(event.action) {
-                    MotionEvent.ACTION_DOWN -> {
-                        moveX = modelAnswer.x - event.rawX
-                        moveY = modelAnswer.y - event.rawY
-                    }
-                    MotionEvent.ACTION_MOVE -> {
-                        modelAnswer.animate()
-                            .x(event.rawX + moveX)
-                            .y(event.rawY + moveY)
-                            .setDuration(0)
-                            .start()
-                    }
-                }
-                return@setOnTouchListener true
-            }
-            paintViewContainer.addView(modelAnswer)
-            modelAnswer.bringToFront()
-        }
         viewModel.modelAnswer.observe(viewLifecycleOwner, observer)
     }
 
@@ -196,18 +196,34 @@ class PaintFragment : Fragment(), CustomEventListener {
         strokePosition.y = pos.y
     }
 
-    private fun onGptRequest(paintView: PaintView) {
+    fun answerBtnOnClickListener() {
+//        onGptRequest(paintView!!)
+    }
+
+    fun onGptRequest() {
+        println("GPT")
         if (isStrokeSelected) {
             isStrokeSelected = false
-            paintView.isSelect = false
+            paintView?.isSelect = false
 
-            val bitmap = paintView.saveToPNG()
-            val file = paintView.saveBitmapToJPG(bitmap)
+            val bitmap = paintView?.saveToPNG()
+            val file = paintView?.saveBitmapToJPG(bitmap!!)
 
             // http request to server
 //            val question = ImageToTextAPI.imageToText(file)
 //            viewModel.queryGPT(0, question!!, PointF(0F, 0F))
             viewModel.queryGPT(0, "염선호", PointF(0F, 0F))
+        }
+    }
+
+    fun updateView() {
+        if (paintView != null) {
+            println("invalidate")
+            paintView!!.invalidate()
+//            paintView!!.onDraw
+        }
+        else {
+            println("NULL")
         }
     }
 }

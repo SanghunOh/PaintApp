@@ -14,28 +14,33 @@ import org.w3c.dom.Text
 class ModelPopupActivity(private val context : AppCompatActivity) {
 
     private val dlg = Dialog(context)
+    private lateinit var question_topbar : TextView
     private lateinit var answer_text : TextView
+    private lateinit var question : TextView
     private lateinit var closeBtn : ImageView
     private lateinit var minimizeBtn : ImageView
     private var isMinimized: Boolean = false
 
 
-
-
-
-    fun show(content : String) {
+    fun show(q: String, content : String) {
         dlg.requestWindowFeature(Window.FEATURE_NO_TITLE)   //타이틀바 제거
         dlg.setContentView(R.layout.activity_model_popup)     //다이얼로그에 사용할 xml 파일을 불러옴
         dlg.setCancelable(false)    //다이얼로그의 바깥 화면을 눌렀을 때 다이얼로그가 닫히지 않도록 함
 
+
+        question = dlg.findViewById(R.id.question_popup)
+        question.text = q
+        question_topbar = dlg.findViewById(R.id.question_bar_popup)
+        question_topbar.text = q
+
         answer_text = dlg.findViewById(R.id.answer_field_textview)
         answer_text.text = content
 
-        closeBtn = dlg.findViewById(R.id.closepopup)
+        closeBtn = dlg.findViewById(R.id.close_popup)
         closeBtn.setOnClickListener {
             dlg.dismiss()
         }
-        minimizeBtn = dlg.findViewById(R.id.minimizepopup)
+        minimizeBtn = dlg.findViewById(R.id.minimize_popup)
         dlg.show()
     }
 }

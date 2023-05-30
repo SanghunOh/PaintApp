@@ -93,7 +93,7 @@ class PaintCanvasRepository(application: Application) {
         val json = "{" +
                 "  \"model\": \"gpt-3.5-turbo\"," +
                 "  \"messages\": [{\"role\": \"user\"," +
-                "  \"content\": \"$question!!\"}]" +
+                "  \"content\": \"$question\"}]" +
                 "}"
 
         val requestBody: RequestBody = json.toRequestBody(mediaType)
@@ -110,10 +110,8 @@ class PaintCanvasRepository(application: Application) {
         okHttpClient.newCall(request).enqueue(object : Callback {
             override fun onResponse(call: Call, response: Response) {
                 val json_obj = JSONObject(response.body?.string())
-                Log.d("gpt", json_obj.toString())
                 val json_array = json_obj.optJSONArray("choices")
 
-                Log.d("gpt", json_array.toString())
                 val json_text = json_array!!.getJSONObject(0).getString("message")
                 val json_obj2 = JSONObject(json_text)
                 val json_text2 = json_obj2.getString("content")

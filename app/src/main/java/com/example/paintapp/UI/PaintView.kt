@@ -116,7 +116,6 @@ class PaintView(context: Context, attributeSet: AttributeSet?) : View(context, a
     override fun onTouchEvent(event: MotionEvent): Boolean {
         val x = event.x
         val y = event.y
-        println("$x, $y")
         if (event.getToolType(0) != MotionEvent.TOOL_TYPE_STYLUS)
             return false
 
@@ -245,7 +244,7 @@ class PaintView(context: Context, attributeSet: AttributeSet?) : View(context, a
             else -> return false
         }
 
-        postInvalidate() // important inform non-ui thread that some changes have been done
+        invalidate() // important inform non-ui thread that some changes have been done
         return false;
     }
 
@@ -305,10 +304,11 @@ class PaintView(context: Context, attributeSet: AttributeSet?) : View(context, a
 
         val canvas = Canvas(bitmap)
 
-        val paint = strokePaint
+        val paint = Paint(strokePaint)
         canvas.drawColor(Color.WHITE)
 
         paint.color = Color.BLACK
+        paint.strokeWidth = 1F
 
         for(i: Int in 0 until selectedStroke.size) {
             min.x = min(pathList[selectedStroke[i]].minX, min.x)
@@ -321,13 +321,13 @@ class PaintView(context: Context, attributeSet: AttributeSet?) : View(context, a
 
         view.draw(canvas)
 
-        return Bitmap.createBitmap(bitmap, (min.x - 50).toInt(), (min.y - 50).toInt(), (max.x - min.x + 100).toInt(), (max.y - min.y + 100).toInt())
+        return Bitmap.createBitmap(bitmap, (min.x - 100).toInt(), (min.y - 100).toInt(), (max.x - min.x + 200).toInt(), (max.y - min.y + 200).toInt())
     }
 
     fun saveBitmapToJPG(bitmap: Bitmap): File {
         val pictureFileDir = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), context.getString(
             R.string.app_name))
-        val pictureFile = File(pictureFileDir.path + System.currentTimeMillis() + ".png")
+        val pictureFile = File(pictureFileDir.path + System.currentTimeMillis() + ".jpg")
 
         if (!pictureFileDir.exists()) {
             pictureFileDir.mkdirs()
