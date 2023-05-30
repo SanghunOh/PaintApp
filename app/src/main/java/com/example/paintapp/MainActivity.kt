@@ -111,7 +111,7 @@ class MainActivity : AppCompatActivity(),NavigationView.OnNavigationItemSelected
             drawerLayout.openDrawer(GravityCompat.START)
         }
 
-        ocrapi.OcrTest("KakaoTalk_Photo_2023-05-06-21-59-55.jpg")
+      //  ocrapi.OcrTest("KakaoTalk_Photo_2023-05-06-21-59-55.jpg")
         supportActionBar?.hide()
 
         viewModel = ViewModelProvider(this)[PaintViewModel::class.java]

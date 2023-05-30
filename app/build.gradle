@@ -14,7 +14,7 @@ android {
     defaultConfig {
         applicationId "com.example.paintapp"
         minSdk 25
-        targetSdk 33
+        targetSdk 31
         versionCode 1
         versionName "1.0"
 
@@ -55,6 +55,7 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
     implementation 'com.pspdfkit:pspdfkit:8.2.1'
     implementation 'com.squareup.okhttp3:okhttp:4.9.3'
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.12.1")
 
     // ROOM Database
     implementation "androidx.room:room-runtime:2.5.1"
