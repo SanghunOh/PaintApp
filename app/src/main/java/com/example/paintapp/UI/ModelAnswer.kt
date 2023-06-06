@@ -1,11 +1,9 @@
-package com.example.paintapp
+package com.example.paintapp.UI
 
 import android.content.Context
-import android.graphics.Paint
-import android.util.AttributeSet
-import android.view.View
 import android.view.ViewGroup
 import android.widget.*
+import com.example.paintapp.R
 
 class ModelAnswer(context: Context) : LinearLayout(context) {
     var params : ViewGroup.LayoutParams? = null

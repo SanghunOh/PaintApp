@@ -5,7 +5,7 @@
     android:layout_height="match_parent"
     android:id="@+id/paint_view_container"
     android:layout_gravity="top"
-    tools:context=".PaintFragment">
+    tools:context=".UI.PaintFragment">
 
 
     <include

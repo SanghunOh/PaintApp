@@ -1,7 +1,6 @@
 package com.example.paintapp.data
 
 import androidx.room.*
-import com.example.paintapp.CustomPath
 
 
 @Entity(tableName="paint_canvas")

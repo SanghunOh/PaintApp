@@ -1,4 +1,4 @@
-package com.example.paintapp
+package com.example.paintapp.data
 
 import android.graphics.Path
 import android.graphics.PointF

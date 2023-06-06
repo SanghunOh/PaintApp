@@ -1,6 +1,5 @@
 package com.example.paintapp.UI
 
-import android.app.Activity
 import android.content.Context
 import android.content.res.Resources
 import android.graphics.*
@@ -8,12 +7,11 @@ import android.os.Environment
 import android.util.AttributeSet
 import android.util.DisplayMetrics
 import android.util.Log
-import android.view.Display
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import com.example.paintapp.CustomEventListener
-import com.example.paintapp.CustomPath
+import com.example.paintapp.data.CustomPath
 import com.example.paintapp.MainActivity.Companion.path
 import com.example.paintapp.MainActivity.Companion.strokePaint
 import com.example.paintapp.R
@@ -116,8 +114,6 @@ class PaintView(context: Context, attributeSet: AttributeSet?) : View(context, a
     override fun onTouchEvent(event: MotionEvent): Boolean {
         val x = event.x
         val y = event.y
-        if (event.getToolType(0) != MotionEvent.TOOL_TYPE_STYLUS)
-            return false
 
         when(event.action) {
             MotionEvent.ACTION_DOWN, SPEN_ACTION_DOWN -> {
@@ -219,8 +215,10 @@ class PaintView(context: Context, attributeSet: AttributeSet?) : View(context, a
                             }
                             isSelect = true
                         }
-                        // TODO : create popup for query chatgpt
                         triggerOnStrokeSelected(PointF(topLeft.x, bottomRight.y))
+                    }
+                    else {
+                        triggerOnStrokeDeSelected()
                     }
                 }
                 else {
@@ -287,7 +285,11 @@ class PaintView(context: Context, attributeSet: AttributeSet?) : View(context, a
     }
 
     private fun triggerOnStrokeSelected(pos: PointF) {
-        customEventListener?.onStrokeSelected(pos);
+        customEventListener?.onStrokeSelected(pos)
+    }
+
+    private fun triggerOnStrokeDeSelected() {
+        customEventListener?.onStrokeDeselected()
     }
 
     fun saveToPNG(): Bitmap {
@@ -308,7 +310,7 @@ class PaintView(context: Context, attributeSet: AttributeSet?) : View(context, a
         canvas.drawColor(Color.WHITE)
 
         paint.color = Color.BLACK
-        paint.strokeWidth = 1F
+        paint.strokeWidth = 4F
 
         for(i: Int in 0 until selectedStroke.size) {
             min.x = min(pathList[selectedStroke[i]].minX, min.x)
@@ -321,7 +323,7 @@ class PaintView(context: Context, attributeSet: AttributeSet?) : View(context, a
 
         view.draw(canvas)
 
-        return Bitmap.createBitmap(bitmap, (min.x - 50).toInt(), (min.y - 50).toInt(), (max.x - min.x + 100).toInt(), (max.y - min.y + 100).toInt())
+        return Bitmap.createBitmap(bitmap, (min.x - 200).toInt(), (min.y - 200).toInt(), (max.x - min.x + 400).toInt(), (max.y - min.y + 400).toInt())
     }
 
     fun saveBitmapToJPG(bitmap: Bitmap): File {

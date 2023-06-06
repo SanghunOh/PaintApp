@@ -4,10 +4,7 @@ import android.app.Application
 import android.graphics.PointF
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
-import com.example.paintapp.API.RetrofitInstance
-import com.example.paintapp.API.response.Message
 import com.example.paintapp.BuildConfig
-import com.example.paintapp.CustomPath
 import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -116,6 +113,7 @@ class PaintCanvasRepository(application: Application) {
                 val json_obj2 = JSONObject(json_text)
                 val json_text2 = json_obj2.getString("content")
 
+                println(json_text2)
                 modelAnswer.postValue(json_text2)
             }
 

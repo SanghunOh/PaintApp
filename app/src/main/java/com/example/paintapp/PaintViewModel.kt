@@ -2,8 +2,9 @@ package com.example.paintapp
 
 import android.app.Application
 import android.graphics.PointF
-import android.icu.lang.UCharacter.GraphemeClusterBreak.T
 import androidx.lifecycle.*
+import com.example.paintapp.data.CustomPath
+import com.example.paintapp.data.ModelAnswer
 import com.example.paintapp.data.PaintCanvas
 import com.example.paintapp.data.PaintCanvasRepository
 import kotlinx.coroutines.Dispatchers.Main
@@ -21,6 +22,15 @@ class PaintViewModel(application: Application) : AndroidViewModel(application) {
     private val _modelAnswer = MutableLiveData<String>()
     val modelAnswer: LiveData<String>
         get() = _modelAnswer
+
+    private val _gptQuestion = MutableLiveData<String>()
+    val gptQuestion: LiveData<String>
+        get() = _gptQuestion
+
+    private val _maPos = MutableLiveData<PointF>()
+    val maPos: LiveData<PointF>
+        get() = _maPos
+
 
     init {
         // data 가져오기
@@ -41,6 +51,8 @@ class PaintViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             withContext(Main){
                 paintCanvasRepository.queryGPT(canvasId, question, position, _modelAnswer)
+                maPos
+                gptQuestion
             }
         }
     }
